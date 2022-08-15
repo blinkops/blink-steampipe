@@ -47,15 +47,23 @@ func (gen AWSCredentialGenerator) Generate() error {
 		if err != nil {
 			return fmt.Errorf("unable to assume role with error: %w", err)
 		}
-		if err = os.Setenv(awsAccessKeyId, access); err != nil {
-			return err
+
+		variables := []Variable{
+			{
+				Key:   awsAccessKeyId,
+				Value: access,
+			},
+			{
+				Key:   awsSecretAccessKey,
+				Value: secret,
+			},
+			{
+				Key:   awsSessionToken,
+				Value: sessionToken,
+			},
 		}
-		if err = os.Setenv(awsSecretAccessKey, secret); err != nil {
-			return err
-		}
-		if err = os.Setenv(awsSessionToken, sessionToken); err != nil {
-			return err
-		}
+
+		return SetEnv(variables...)
 	default:
 		return errors.New("invalid aws connection was provided")
 	}

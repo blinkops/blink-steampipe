@@ -9,12 +9,13 @@ import (
 )
 
 const (
-	gcpConnectionIdentifier      = "GCP_CONNECTION"
-	gcpJsonCredential            = "GOOGLE_CREDENTIALS"
-	gcpProjectIdKey              = "project_id"
-	cloudSdkProjectEnvVariable   = "CLOUDSDK_CORE_PROJECT"
-	gcpCredentialPathEnvVariable = "GOOGLE_APPLICATION_CREDENTIALS"
-	gcpCredentialPathFormat      = "/tmp/%s/creds.json"
+	gcpConnectionIdentifier          = "GCP_CONNECTION"
+	gcpJsonCredential                = "GOOGLE_CREDENTIALS"
+	gcpProjectIdKey                  = "project_id"
+	cloudSdkProjectEnvVariable       = "CLOUDSDK_CORE_PROJECT"
+	gcpCredentialPathEnvVariable     = "GOOGLE_APPLICATION_CREDENTIALS"
+	gcpCredentialDirectoryPathFormat = "/tmp/%s/"
+	gcpCredentialFileName            = "creds.json"
 )
 
 type GCPCredentialGenerator struct{}
@@ -32,6 +33,7 @@ func (gen GCPCredentialGenerator) generateJSONCredentials() error {
 	if !ok {
 		return fmt.Errorf("invalid gcp connection was provided")
 	}
+
 	jsonData := []byte(jsonValue)
 
 	credentials := map[string]any{}
@@ -49,17 +51,25 @@ func (gen GCPCredentialGenerator) generateJSONCredentials() error {
 		return fmt.Errorf("invalid project id fetched from provided connection")
 	}
 
-	if err := os.Setenv(cloudSdkProjectEnvVariable, projectIdAsString); err != nil {
-		return fmt.Errorf("unable to set gcp project: %w", err)
+	path := fmt.Sprintf(gcpCredentialDirectoryPathFormat, uuid.NewV4().String())
+	if err := os.MkdirAll(path, 0o770); err != nil {
+		return fmt.Errorf("unable to prepare gcp credentials path: %v", err)
 	}
 
-	path := fmt.Sprintf(gcpCredentialPathFormat, uuid.NewV4().String())
-	if err := os.WriteFile(path, jsonData, 0o600); err != nil {
+	filePath := path + gcpCredentialFileName
+	if err := os.WriteFile(filePath, jsonData, 0o600); err != nil {
 		return fmt.Errorf("unable to prepare gcp credentials: %w", err)
 	}
 
-	if err := os.Setenv(gcpCredentialPathEnvVariable, path); err != nil {
-		return fmt.Errorf("unable to set gcp credentials path: %w", err)
+	variables := []Variable{
+		{
+			Key:   cloudSdkProjectEnvVariable,
+			Value: projectIdAsString,
+		},
+		{
+			Key:   gcpCredentialPathEnvVariable,
+			Value: filePath,
+		},
 	}
-	return nil
+	return SetEnv(variables...)
 }
