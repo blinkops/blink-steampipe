@@ -1,4 +1,4 @@
 install:
-	CGO_ENABLED=0 GOOS=linux go build -o ./build/scripts/bin/generate  ./build/scripts/*.go
+	GOOS=linux GOARCH=amd64 go build -o /bin/generate  ./scripts/*.go
 
 
