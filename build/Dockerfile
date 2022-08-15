@@ -5,7 +5,7 @@ USER steampipe:0
 RUN steampipe plugin install steampipe aws github azure gcp kubernetes
 
 COPY config/ /home/steampipe/.steampipe/config/
-COPY scripts/bin/ /home/steampipe/bin/
+COPY scripts/binaries/ /home/steampipe/bin/
 
 USER root:0
 RUN chown -R steampipe /home/steampipe/bin/
