@@ -3,6 +3,7 @@ package generators
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"strconv"
@@ -20,6 +21,7 @@ const (
 	awsRoleArn              = "AWS_ROLE_ARN"
 	awsExternalID           = "AWS_EXTERNAL_ID"
 	awsSessionToken         = "AWS_SESSION_TOKEN"
+	awsWebIdentityTokenFile = "AWS_WEB_IDENTITY_TOKEN_FILE"
 )
 
 const (
@@ -63,7 +65,7 @@ func (gen AWSCredentialGenerator) Generate() error {
 			},
 		}
 
-		return SetEnv(variables...)
+		return WriteEnvFile(variables...)
 	default:
 		return errors.New("invalid aws connection was provided")
 	}
@@ -71,7 +73,7 @@ func (gen AWSCredentialGenerator) Generate() error {
 	return nil
 }
 
-func (gen AWSCredentialGenerator) detect() (_, _, _ string) {
+func (gen AWSCredentialGenerator) detect() (base, key, value string) {
 	if accessKeyId, secretAccessKey := os.Getenv(awsAccessKeyId), os.Getenv(awsSecretAccessKey); accessKeyId != "" && secretAccessKey != "" {
 		return awsUserBased, accessKeyId, secretAccessKey
 	}
@@ -83,7 +85,35 @@ func (gen AWSCredentialGenerator) detect() (_, _, _ string) {
 
 func (gen AWSCredentialGenerator) assumeRole(svc stsiface.STSAPI, role, externalID string) (access, secret, sessionToken string, err error) {
 	sessionName := strconv.Itoa(rand.Int())
+	if externalID == "" {
+		return gen.assumeRoleWithWebIdentity(svc, role, sessionName)
+	}
 	return gen.assumeRoleWithTrustedIdentity(svc, role, externalID, sessionName)
+}
+
+func (gen AWSCredentialGenerator) assumeRoleWithWebIdentity(svc stsiface.STSAPI, role, sessionName string) (string, string, string, error) {
+	tokenFile, ok := os.LookupEnv(awsWebIdentityTokenFile)
+	if !ok {
+		return "", "", "", fmt.Errorf("token file for irsa not found. make sure your pod is configured correctly and that your service account is created and annotated properly")
+	}
+
+	data, err := ioutil.ReadFile(tokenFile)
+	if err != nil {
+		return "", "", "", fmt.Errorf("unable to open web identity token file with error: %w", err)
+	}
+
+	input := &sts.AssumeRoleWithWebIdentityInput{
+		DurationSeconds:  aws.Int64(3600),
+		RoleArn:          aws.String(role),
+		RoleSessionName:  aws.String(sessionName),
+		WebIdentityToken: aws.String(string(data)),
+	}
+
+	result, err := svc.AssumeRoleWithWebIdentity(input)
+	if err != nil {
+		return "", "", "", err
+	}
+	return *result.Credentials.AccessKeyId, *result.Credentials.SecretAccessKey, *result.Credentials.SessionToken, err
 }
 
 func (gen AWSCredentialGenerator) assumeRoleWithTrustedIdentity(svc stsiface.STSAPI, role, externalID, sessionName string) (string, string, string, error) {

@@ -14,13 +14,10 @@ type Variable struct {
 	Value string
 }
 
-func SetEnv(variable ...Variable) error {
+func WriteEnvFile(variable ...Variable) error {
 	envFile := ""
-	for index, info := range variable {
-		if index > 0 {
-			envFile += "\n"
-		}
-		envFile += fmt.Sprintf("export %s=%s", info.Key, info.Value)
+	for _, info := range variable {
+		envFile += fmt.Sprintf("export %s=%s\n", info.Key, info.Value)
 	}
 
 	if err := os.WriteFile(envFilePath, []byte(envFile), 0o600); err != nil {

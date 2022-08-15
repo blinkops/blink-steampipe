@@ -71,5 +71,5 @@ func (gen GCPCredentialGenerator) generateJSONCredentials() error {
 			Value: filePath,
 		},
 	}
-	return SetEnv(variables...)
+	return WriteEnvFile(variables...)
 }
