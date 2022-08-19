@@ -15,13 +15,16 @@ import (
 )
 
 const (
-	awsConnectionIdentifier = "AWS_CONNECTION"
-	awsAccessKeyId          = "AWS_ACCESS_KEY_ID"
-	awsSecretAccessKey      = "AWS_SECRET_ACCESS_KEY"
-	awsRoleArn              = "AWS_ROLE_ARN"
-	awsExternalID           = "AWS_EXTERNAL_ID"
-	awsSessionToken         = "AWS_SESSION_TOKEN"
-	awsWebIdentityTokenFile = "AWS_WEB_IDENTITY_TOKEN_FILE"
+	awsConnectionIdentifier     = "AWS_CONNECTION"
+	awsAccessKeyId              = "AWS_ACCESS_KEY_ID"
+	awsSecretAccessKey          = "AWS_SECRET_ACCESS_KEY"
+	awsRoleArn                  = "ROLE_ARN"
+	awsExternalID               = "EXTERNAL_ID"
+	awsSessionToken             = "AWS_SESSION_TOKEN"
+	awsWebIdentityTokenFile     = "AWS_WEB_IDENTITY_TOKEN_FILE"
+	awsDefaultSessionRegion     = "eu-west-1"
+	awsRegionEnvVariable        = "AWS_REGION"
+	awsDefaultRegionEnvVariable = "AWS_DEFAULT_REGION"
 )
 
 const (
@@ -40,8 +43,9 @@ func (gen AWSCredentialGenerator) Generate() error {
 	switch base {
 	case awsUserBased: // Implemented automatically via aws cli
 	case awsRoleBased:
+		sessionRegion := gen.getSessionRegion()
 		sess, _ := session.NewSession(&aws.Config{
-			Region: aws.String("eu-west-1"),
+			Region: aws.String(sessionRegion),
 		})
 
 		svc := sts.New(sess)
@@ -71,6 +75,16 @@ func (gen AWSCredentialGenerator) Generate() error {
 	}
 
 	return nil
+}
+
+func (gen AWSCredentialGenerator) getSessionRegion() string {
+	if region := os.Getenv(awsRegionEnvVariable); region != "" {
+		return region
+	}
+	if region := os.Getenv(awsDefaultRegionEnvVariable); region != "" {
+		return region
+	}
+	return awsDefaultSessionRegion
 }
 
 func (gen AWSCredentialGenerator) detect() (base, key, value string) {
