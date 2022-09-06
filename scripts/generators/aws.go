@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/aws/aws-sdk-go/service/sts/stsiface"
@@ -28,8 +29,11 @@ const (
 )
 
 const (
-	awsUserBased = "user_based"
-	awsRoleBased = "role_based"
+	awsUserBased          = "user_based"
+	awsRoleBased          = "role_based"
+	assumeWebIdentity     = "assume_web_identity"
+	assumeCrossAccount    = "assume_cross_account"
+	assumeTrustedIdentity = "assume_trusted_identity"
 )
 
 type AWSCredentialGenerator struct{}
@@ -39,17 +43,16 @@ func (gen AWSCredentialGenerator) Generate() error {
 		return nil
 	}
 
-	base, key, value := gen.detect()
+	base, subBase := gen.detect()
 	switch base {
 	case awsUserBased: // Implemented automatically via aws cli
 	case awsRoleBased:
 		sessionRegion := gen.getSessionRegion()
-		sess, _ := session.NewSession(&aws.Config{
-			Region: aws.String(sessionRegion),
-		})
+		roleArn, externalId := os.Getenv(awsRoleArn), os.Getenv(awsExternalID)
 
-		svc := sts.New(sess)
-		access, secret, sessionToken, err := gen.assumeRole(svc, key, value)
+		svc := gen.initSTSClient(subBase, sessionRegion)
+
+		access, secret, sessionToken, err := gen.assumeRole(svc, subBase, roleArn, externalId)
 		if err != nil {
 			return fmt.Errorf("unable to assume role with error: %w", err)
 		}
@@ -87,22 +90,55 @@ func (gen AWSCredentialGenerator) getSessionRegion() string {
 	return awsDefaultSessionRegion
 }
 
-func (gen AWSCredentialGenerator) detect() (base, key, value string) {
+func (gen AWSCredentialGenerator) detect() (base, subBase string) {
+	if roleArn := os.Getenv(awsRoleArn); roleArn != "" {
+		if accessKeyId, secretAccessKey := os.Getenv(awsAccessKeyId), os.Getenv(awsSecretAccessKey); accessKeyId != "" && secretAccessKey != "" {
+			return awsRoleBased, assumeCrossAccount
+		}
+		if externalId := os.Getenv(awsExternalID); externalId != "" {
+			return awsRoleBased, assumeTrustedIdentity
+		}
+		return awsRoleBased, assumeWebIdentity
+	}
 	if accessKeyId, secretAccessKey := os.Getenv(awsAccessKeyId), os.Getenv(awsSecretAccessKey); accessKeyId != "" && secretAccessKey != "" {
-		return awsUserBased, accessKeyId, secretAccessKey
+		return awsUserBased, ""
 	}
-	if roleArn, externalId := os.Getenv(awsRoleArn), os.Getenv(awsExternalID); roleArn != "" {
-		return awsRoleBased, roleArn, externalId
-	}
-	return "", "", ""
+	return "", ""
 }
 
-func (gen AWSCredentialGenerator) assumeRole(svc stsiface.STSAPI, role, externalID string) (access, secret, sessionToken string, err error) {
-	sessionName := strconv.Itoa(rand.Int())
-	if externalID == "" {
-		return gen.assumeRoleWithWebIdentity(svc, role, sessionName)
+func (gen AWSCredentialGenerator) initSTSClient(subBase, region string) stsiface.STSAPI {
+	var sessConfig aws.Config
+	switch subBase {
+	case assumeCrossAccount:
+		accessKeyId, secretAccessKey, sessionToken := os.Getenv(awsAccessKeyId), os.Getenv(awsSecretAccessKey), os.Getenv(awsSessionToken)
+
+		sessConfig = aws.Config{
+			Region:      aws.String(region),
+			Credentials: credentials.NewStaticCredentials(accessKeyId, secretAccessKey, sessionToken),
+		}
+	default:
+		sessConfig = aws.Config{
+			Region: aws.String(region),
+		}
 	}
-	return gen.assumeRoleWithTrustedIdentity(svc, role, externalID, sessionName)
+
+	sess, _ := session.NewSession(&sessConfig)
+	return sts.New(sess)
+}
+
+func (gen AWSCredentialGenerator) assumeRole(svc stsiface.STSAPI, subBase, role, externalID string) (access, secret, sessionToken string, err error) {
+	sessionName := strconv.Itoa(rand.Int())
+
+	switch subBase {
+	case assumeWebIdentity:
+		return gen.assumeRoleWithWebIdentity(svc, role, sessionName)
+	case assumeTrustedIdentity:
+		return gen.assumeRoleWithTrustedIdentity(svc, role, externalID, sessionName)
+	case assumeCrossAccount:
+		return gen.assumeRoleCrossAccounts(svc, role, sessionName)
+	default:
+		return "", "", "", errors.New("invalid assume role type was provided")
+	}
 }
 
 func (gen AWSCredentialGenerator) assumeRoleWithWebIdentity(svc stsiface.STSAPI, role, sessionName string) (string, string, string, error) {
@@ -141,4 +177,15 @@ func (gen AWSCredentialGenerator) assumeRoleWithTrustedIdentity(svc stsiface.STS
 		return "", "", "", err
 	}
 	return *result.Credentials.AccessKeyId, *result.Credentials.SecretAccessKey, *result.Credentials.SessionToken, nil
+}
+
+func (gen AWSCredentialGenerator) assumeRoleCrossAccounts(svc stsiface.STSAPI, role, sessionName string) (string, string, string, error) {
+	result, err := svc.AssumeRole(&sts.AssumeRoleInput{
+		RoleArn:         &role,
+		RoleSessionName: &sessionName,
+	})
+	if err != nil {
+		return "", "", "", err
+	}
+	return *result.Credentials.AccessKeyId, *result.Credentials.SecretAccessKey, *result.Credentials.SessionToken, err
 }
