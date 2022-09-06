@@ -11,7 +11,7 @@ FROM turbot/steampipe:0.15.4
 
 # Install the aws and steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0
-RUN steampipe plugin install steampipe aws@0.75.1 github@0.19.0 azure@0.31.0 gcp@0.26.0 kubernetes@0.10.0
+RUN steampipe plugin install aws github@0.19.0 azure@0.31.0 gcp@0.26.0 kubernetes@0.10.0
 
 COPY config /home/steampipe/.steampipe/config/
 COPY --from=builder /bin/generate /home/steampipe/bin/

@@ -110,11 +110,11 @@ func (gen AWSCredentialGenerator) initSTSClient(subBase, region string) stsiface
 	var sessConfig aws.Config
 	switch subBase {
 	case assumeCrossAccount:
-		accessKeyId, secretAccessKey, sessionToken := os.Getenv(awsAccessKeyId), os.Getenv(awsSecretAccessKey), os.Getenv(awsSessionToken)
+		accessKeyId, secretAccessKey := os.Getenv(awsAccessKeyId), os.Getenv(awsSecretAccessKey)
 
 		sessConfig = aws.Config{
 			Region:      aws.String(region),
-			Credentials: credentials.NewStaticCredentials(accessKeyId, secretAccessKey, sessionToken),
+			Credentials: credentials.NewStaticCredentials(accessKeyId, secretAccessKey, ""),
 		}
 	default:
 		sessConfig = aws.Config{
