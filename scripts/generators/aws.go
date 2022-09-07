@@ -90,36 +90,31 @@ func (gen AWSCredentialGenerator) getSessionRegion() string {
 	return awsDefaultSessionRegion
 }
 
-func (gen AWSCredentialGenerator) detect() (base, subBase string) {
-	if roleArn := os.Getenv(awsRoleArn); roleArn != "" {
-		if accessKeyId, secretAccessKey := os.Getenv(awsAccessKeyId), os.Getenv(awsSecretAccessKey); accessKeyId != "" && secretAccessKey != "" {
-			return awsRoleBased, assumeCrossAccount
-		}
-		if externalId := os.Getenv(awsExternalID); externalId != "" {
-			return awsRoleBased, assumeTrustedIdentity
-		}
-		return awsRoleBased, assumeWebIdentity
-	}
+func (gen AWSCredentialGenerator) detect() (base, sub string) {
 	if accessKeyId, secretAccessKey := os.Getenv(awsAccessKeyId), os.Getenv(awsSecretAccessKey); accessKeyId != "" && secretAccessKey != "" {
-		return awsUserBased, ""
+		base = awsUserBased
 	}
-	return "", ""
+	if roleArn := os.Getenv(awsRoleArn); roleArn == "" {
+		return base, sub
+	}
+	if base == awsUserBased {
+		return awsRoleBased, assumeCrossAccount
+	}
+
+	if externalId := os.Getenv(awsExternalID); externalId != "" {
+		return awsRoleBased, assumeTrustedIdentity
+	}
+
+	return awsRoleBased, assumeWebIdentity
 }
 
 func (gen AWSCredentialGenerator) initSTSClient(subBase, region string) stsiface.STSAPI {
-	var sessConfig aws.Config
-	switch subBase {
-	case assumeCrossAccount:
+	sessConfig := aws.Config{
+		Region: aws.String(region),
+	}
+	if subBase == assumeCrossAccount {
 		accessKeyId, secretAccessKey := os.Getenv(awsAccessKeyId), os.Getenv(awsSecretAccessKey)
-
-		sessConfig = aws.Config{
-			Region:      aws.String(region),
-			Credentials: credentials.NewStaticCredentials(accessKeyId, secretAccessKey, ""),
-		}
-	default:
-		sessConfig = aws.Config{
-			Region: aws.String(region),
-		}
+		sessConfig.Credentials = credentials.NewStaticCredentials(accessKeyId, secretAccessKey, "")
 	}
 
 	sess, _ := session.NewSession(&sessConfig)
@@ -136,9 +131,8 @@ func (gen AWSCredentialGenerator) assumeRole(svc stsiface.STSAPI, subBase, role,
 		return gen.assumeRoleWithTrustedIdentity(svc, role, externalID, sessionName)
 	case assumeCrossAccount:
 		return gen.assumeRoleCrossAccounts(svc, role, sessionName)
-	default:
-		return "", "", "", errors.New("invalid assume role type was provided")
 	}
+	return "", "", "", errors.New("invalid assume role type was provided")
 }
 
 func (gen AWSCredentialGenerator) assumeRoleWithWebIdentity(svc stsiface.STSAPI, role, sessionName string) (string, string, string, error) {
