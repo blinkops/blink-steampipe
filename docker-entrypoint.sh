@@ -11,8 +11,8 @@ fi
 
 touch /home/steampipe/.env
 
-if [[ $(/home/steampipe/bin/generate && . /home/steampipe/.env) -ne 0 ]]; then
-  exit 1
-fi
+/home/steampipe/blink/bin/generate
+
+. /home/steampipe/.env
 
 exec "$@"

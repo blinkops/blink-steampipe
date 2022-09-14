@@ -32,11 +32,26 @@ const (
 	awsRoleBased = "role_based"
 )
 
+const (
+	blinkConfigurationDirectory     = "/home/steampipe/blink/config/"
+	steampipeConfigurationDirectory = "/home/steampipe/.steampipe/config/"
+	awsConfigurationFile            = "aws.spc"
+)
+
 type AWSCredentialGenerator struct{}
 
 func (gen AWSCredentialGenerator) Generate() error {
 	if _, ok := os.LookupEnv(awsConnectionIdentifier); !ok {
 		return nil
+	}
+
+	conf, err := os.ReadFile(blinkConfigurationDirectory + awsConfigurationFile)
+	if err != nil {
+		return err
+	}
+
+	if err = os.WriteFile(steampipeConfigurationDirectory+awsConfigurationFile, conf, 0o644); err != nil {
+		return err
 	}
 
 	base, key, value := gen.detect()
