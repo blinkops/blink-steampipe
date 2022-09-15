@@ -16,6 +16,9 @@ RUN steampipe plugin install aws@0.76.0 github@0.19.0 azure@0.31.0 gcp@0.26.0 ku
 # Validate steampipe is running
 RUN steampipe plugin list
 
+# Sanity check
+RUN steampipe query "select 1" --output csv
+
 COPY --from=builder /bin/generate /home/steampipe/bin/
 COPY docker-entrypoint.sh /home/steampipe/bin
 
