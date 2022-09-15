@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-
-	uuid "github.com/satori/go.uuid"
 )
 
 const (
@@ -13,9 +11,8 @@ const (
 	gcpJsonCredential                = "GOOGLE_CREDENTIALS"
 	gcpProjectIdKey                  = "project_id"
 	cloudSdkProjectEnvVariable       = "CLOUDSDK_CORE_PROJECT"
-	gcpCredentialPathEnvVariable     = "GOOGLE_APPLICATION_CREDENTIALS"
-	gcpCredentialDirectoryPathFormat = "/tmp/%s/"
-	gcpCredentialFileName            = "creds.json"
+	gcpCredentialDirectoryPathFormat = "/home/steampipe/.config/gcloud/"
+	gcpCredentialFileName            = "application_default_credentials.json"
 )
 
 type GCPCredentialGenerator struct{}
@@ -51,12 +48,11 @@ func (gen GCPCredentialGenerator) generateJSONCredentials() error {
 		return fmt.Errorf("invalid project id fetched from provided connection")
 	}
 
-	path := fmt.Sprintf(gcpCredentialDirectoryPathFormat, uuid.NewV4().String())
-	if err := os.MkdirAll(path, 0o770); err != nil {
+	if err := os.MkdirAll(gcpCredentialDirectoryPathFormat, 0o770); err != nil {
 		return fmt.Errorf("unable to prepare gcp credentials path: %v", err)
 	}
 
-	filePath := path + gcpCredentialFileName
+	filePath := gcpCredentialDirectoryPathFormat + gcpCredentialFileName
 	if err := os.WriteFile(filePath, jsonData, 0o600); err != nil {
 		return fmt.Errorf("unable to prepare gcp credentials: %w", err)
 	}
@@ -65,10 +61,6 @@ func (gen GCPCredentialGenerator) generateJSONCredentials() error {
 		{
 			Key:   cloudSdkProjectEnvVariable,
 			Value: projectIdAsString,
-		},
-		{
-			Key:   gcpCredentialPathEnvVariable,
-			Value: filePath,
 		},
 	}
 	return WriteEnvFile(variables...)
