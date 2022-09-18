@@ -3,15 +3,15 @@ package generators
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"math/rand"
-	"os"
-	"strconv"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/aws/aws-sdk-go/service/sts/stsiface"
+	log "github.com/sirupsen/logrus"
+	"io/ioutil"
+	"math/rand"
+	"os"
+	"strconv"
 )
 
 const (
@@ -108,7 +108,15 @@ func (gen AWSCredentialGenerator) assumeRole(svc stsiface.STSAPI, role, external
 func (gen AWSCredentialGenerator) assumeRoleWithWebIdentity(svc stsiface.STSAPI, role, sessionName string) (string, string, string, error) {
 	tokenFile, ok := os.LookupEnv(awsWebIdentityTokenFile)
 	if !ok {
-		return "", "", "", fmt.Errorf("token file for irsa not found. make sure your pod is configured correctly and that your service account is created and annotated properly")
+		log.Debug("token file for irsa not found. try assume role")
+		result, err := svc.AssumeRole(&sts.AssumeRoleInput{
+			RoleArn:         &role,
+			RoleSessionName: &sessionName,
+		})
+		if err != nil {
+			return "", "", "", err
+		}
+		return *result.Credentials.AccessKeyId, *result.Credentials.SecretAccessKey, *result.Credentials.SessionToken, err
 	}
 
 	data, err := ioutil.ReadFile(tokenFile)
