@@ -18,8 +18,6 @@ const (
 	awsConnectionIdentifier     = "AWS_CONNECTION"
 	awsAccessKeyId              = "AWS_ACCESS_KEY_ID"
 	awsSecretAccessKey          = "AWS_SECRET_ACCESS_KEY"
-	awsAccessKeyParam           = "ACCESS_KEY_ID"
-	awsSecretAccessParam        = "SECRET_ACCESS_KEY"
 	awsRoleArn                  = "ROLE_ARN"
 	awsExternalID               = "EXTERNAL_ID"
 	awsSessionToken             = "AWS_SESSION_TOKEN"
@@ -37,6 +35,13 @@ const (
 type AWSCredentialGenerator struct{}
 
 func (gen AWSCredentialGenerator) Generate() error {
+	if err := gen.generate(); err != nil {
+		log.Warnf("failed resolving aws credentials, will try without credentials: %v", err)
+	}
+	return nil
+}
+
+func (gen AWSCredentialGenerator) generate() error {
 	if _, ok := os.LookupEnv(awsConnectionIdentifier); !ok {
 		return nil
 	}
@@ -90,7 +95,7 @@ func (gen AWSCredentialGenerator) getSessionRegion() string {
 }
 
 func (gen AWSCredentialGenerator) detect() (base, key, value string) {
-	if accessKeyId, secretAccessKey := os.Getenv(awsAccessKeyParam), os.Getenv(awsSecretAccessParam); accessKeyId != "" && secretAccessKey != "" {
+	if accessKeyId, secretAccessKey := os.Getenv(awsAccessKeyId), os.Getenv(awsSecretAccessKey); accessKeyId != "" && secretAccessKey != "" {
 		return awsUserBased, accessKeyId, secretAccessKey
 	}
 	if roleArn, externalId := os.Getenv(awsRoleArn), os.Getenv(awsExternalID); roleArn != "" {
