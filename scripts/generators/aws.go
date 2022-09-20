@@ -18,6 +18,8 @@ const (
 	awsConnectionIdentifier     = "AWS_CONNECTION"
 	awsAccessKeyId              = "AWS_ACCESS_KEY_ID"
 	awsSecretAccessKey          = "AWS_SECRET_ACCESS_KEY"
+	awsAccessKeyParam           = "ACCESS_KEY_ID"
+	awsSecretAccessParam        = "SECRET_ACCESS_KEY"
 	awsRoleArn                  = "ROLE_ARN"
 	awsExternalID               = "EXTERNAL_ID"
 	awsSessionToken             = "AWS_SESSION_TOKEN"
@@ -88,7 +90,7 @@ func (gen AWSCredentialGenerator) getSessionRegion() string {
 }
 
 func (gen AWSCredentialGenerator) detect() (base, key, value string) {
-	if accessKeyId, secretAccessKey := os.Getenv(awsAccessKeyId), os.Getenv(awsSecretAccessKey); accessKeyId != "" && secretAccessKey != "" {
+	if accessKeyId, secretAccessKey := os.Getenv(awsAccessKeyParam), os.Getenv(awsSecretAccessParam); accessKeyId != "" && secretAccessKey != "" {
 		return awsUserBased, accessKeyId, secretAccessKey
 	}
 	if roleArn, externalId := os.Getenv(awsRoleArn), os.Getenv(awsExternalID); roleArn != "" {
