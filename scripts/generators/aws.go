@@ -40,7 +40,7 @@ type AWSCredentialGenerator struct{}
 
 func (gen AWSCredentialGenerator) Generate() error {
 	if err := gen.generate(); err != nil {
-		log.Warnf("failed resolving aws credentials, will try without credentials: %v", err)
+		log.Tracef("failed resolving aws credentials, will try without credentials: %v", err)
 	}
 	return nil
 }
