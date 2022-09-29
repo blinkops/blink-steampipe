@@ -1,0 +1,16 @@
+@Library('jenkins-pipeline-lib')
+import blink.jenkins.utils.*
+import blink.jenkins.*
+import blink.jenkins.ci.*
+
+node ("ci") {
+  def pipeline = new PluginPipeline(this)
+  pipeline.projectName = "blink-steampipe"
+  pipeline.mainBranchName = "main"
+  pipeline.pushPublicImageOnMain = ["blink-steampipe-aws", "blink-steampipe-gcp", "blink-steampipe-azure", "blink-steampipe-github", "blink-steampipe-k8s"]
+  pipeline.dockerRegistry = Constants.PUBLIC_DOCKER_REGISTRY
+  pipeline.isMultiImage = true
+  pipeline.runUnitTests = false
+  pipeline.runPluginManager = false
+  pipeline.run()
+}
