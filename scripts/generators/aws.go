@@ -3,16 +3,17 @@ package generators
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"math/rand"
+	"os"
+	"strconv"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/aws/aws-sdk-go/service/sts/stsiface"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"math/rand"
-	"os"
-	"strconv"
 )
 
 const (
@@ -29,11 +30,10 @@ const (
 )
 
 const (
-	awsUserBased          = "user_based"
-	awsRoleBased          = "role_based"
-	assumeWebIdentity     = "assume_web_identity"
-	assumeCrossAccount    = "assume_cross_account"
-	assumeTrustedIdentity = "assume_trusted_identity"
+	awsUserBased       = "user_based"
+	awsRoleBased       = "role_based"
+	assumeCrossAccount = "assume_cross_account"
+	assumeIdentity     = "assume_identity"
 )
 
 type AWSCredentialGenerator struct{}
@@ -108,11 +108,7 @@ func (gen AWSCredentialGenerator) detect() (base, sub string) {
 		return awsRoleBased, assumeCrossAccount
 	}
 
-	if externalId := os.Getenv(awsExternalID); externalId != "" {
-		return awsRoleBased, assumeTrustedIdentity
-	}
-
-	return awsRoleBased, assumeWebIdentity
+	return awsRoleBased, assumeIdentity
 }
 
 func (gen AWSCredentialGenerator) initSTSClient(subBase, region string) stsiface.STSAPI {
@@ -132,14 +128,23 @@ func (gen AWSCredentialGenerator) assumeRole(svc stsiface.STSAPI, subBase, role,
 	sessionName := strconv.Itoa(rand.Int())
 
 	switch subBase {
-	case assumeWebIdentity:
-		return gen.assumeRoleWithWebIdentity(svc, role, sessionName)
-	case assumeTrustedIdentity:
-		return gen.assumeRoleWithTrustedIdentity(svc, role, externalID, sessionName)
+	case assumeIdentity:
+		return gen.assumeRoleWithIdentity(svc, role, externalID, sessionName)
 	case assumeCrossAccount:
 		return gen.assumeRoleCrossAccounts(svc, role, sessionName)
 	}
 	return "", "", "", errors.New("invalid assume role type was provided")
+}
+
+// assumeRoleWithIdentity first tries to assume a trusted identity using the role and external id, and if it doesn't
+// succeed, it falls back to assuming a web identity using only the role
+func (gen AWSCredentialGenerator) assumeRoleWithIdentity(svc stsiface.STSAPI, role, externalId, sessionName string) (string, string, string, error) {
+	accessKey, secretAccessKey, sessionToken, err := gen.assumeRoleWithTrustedIdentity(svc, role, externalId, sessionName)
+	if err != nil {
+		return gen.assumeRoleWithWebIdentity(svc, role, sessionName)
+	}
+
+	return accessKey, secretAccessKey, sessionToken, nil
 }
 
 func (gen AWSCredentialGenerator) assumeRoleWithWebIdentity(svc stsiface.STSAPI, role, sessionName string) (string, string, string, error) {
