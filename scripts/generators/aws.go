@@ -139,8 +139,10 @@ func (gen AWSCredentialGenerator) assumeRole(svc stsiface.STSAPI, subBase, role,
 // assumeRoleWithIdentity first tries to assume a trusted identity using the role and external id, and if it doesn't
 // succeed, it falls back to assuming a web identity using only the role
 func (gen AWSCredentialGenerator) assumeRoleWithIdentity(svc stsiface.STSAPI, role, externalId, sessionName string) (string, string, string, error) {
+	log.Debugf("assuming role with identity. Trying to assume role with trusted identity first and falling back to web identity")
 	accessKey, secretAccessKey, sessionToken, err := gen.assumeRoleWithTrustedIdentity(svc, role, externalId, sessionName)
 	if err != nil {
+		log.Errorf("error assuming role with trusted identity: %v", err)
 		return gen.assumeRoleWithWebIdentity(svc, role, sessionName)
 	}
 
