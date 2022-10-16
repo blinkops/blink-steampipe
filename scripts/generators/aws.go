@@ -26,6 +26,8 @@ const (
 	awsDefaultSessionRegion     = "eu-west-1"
 	awsRegionEnvVariable        = "AWS_REGION"
 	awsDefaultRegionEnvVariable = "AWS_DEFAULT_REGION"
+	awsAccessKeyIdEnv           = "AWS_ACCESS_KEY_ID"
+	awsSecretAccessKeyEnv       = "AWS_SECRET_ACCESS_KEY"
 )
 
 const (
@@ -66,11 +68,11 @@ func (gen AWSCredentialGenerator) generate() error {
 
 		variables := []Variable{
 			{
-				Key:   awsAccessKeyId,
+				Key:   awsAccessKeyIdEnv,
 				Value: access,
 			},
 			{
-				Key:   awsSecretAccessKey,
+				Key:   awsSecretAccessKeyEnv,
 				Value: secret,
 			},
 			{
