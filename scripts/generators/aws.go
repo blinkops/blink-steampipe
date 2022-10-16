@@ -17,8 +17,8 @@ import (
 
 const (
 	awsConnectionIdentifier     = "AWS_CONNECTION"
-	awsAccessKeyId              = "AWS_ACCESS_KEY_ID"
-	awsSecretAccessKey          = "AWS_SECRET_ACCESS_KEY"
+	awsAccessKeyId              = "ACCESS_KEY_ID"
+	awsSecretAccessKey          = "SECRET_ACCESS_KEY"
 	awsRoleArn                  = "ROLE_ARN"
 	awsExternalID               = "EXTERNAL_ID"
 	awsSessionToken             = "AWS_SESSION_TOKEN"
