@@ -23,13 +23,10 @@ const (
 	awsSecretAccessKey          = "SECRET_ACCESS_KEY"
 	awsRoleArn                  = "ROLE_ARN"
 	awsExternalID               = "EXTERNAL_ID"
-	awsSessionToken             = "AWS_SESSION_TOKEN"
 	awsWebIdentityTokenFile     = "AWS_WEB_IDENTITY_TOKEN_FILE"
 	awsDefaultSessionRegion     = "eu-west-1"
 	awsRegionEnvVariable        = "AWS_REGION"
 	awsDefaultRegionEnvVariable = "AWS_DEFAULT_REGION"
-	awsAccessKeyIdEnv           = "AWS_ACCESS_KEY_ID"
-	awsSecretAccessKeyEnv       = "AWS_SECRET_ACCESS_KEY"
 
 	steampipeAwsConfigurationFile = "/home/steampipe/.steampipe/config/aws.spc"
 )
@@ -76,22 +73,6 @@ func (gen AWSCredentialGenerator) generate() error {
 			return fmt.Errorf("unable to assume role with error: %w", err)
 		}
 
-		//variables := []Variable{
-		//	{
-		//		Key:   awsAccessKeyIdEnv,
-		//		Value: access,
-		//	},
-		//	{
-		//		Key:   awsSecretAccessKeyEnv,
-		//		Value: secret,
-		//	},
-		//	{
-		//		Key:   awsSessionToken,
-		//		Value: sessionToken,
-		//	},
-		//}
-		//
-		//return WriteEnvFile(variables...)
 	default:
 		return errors.New("invalid aws connection was provided")
 	}
@@ -99,18 +80,6 @@ func (gen AWSCredentialGenerator) generate() error {
 	if err := replaceSpcConfigs(access, secret, sessionToken); err != nil {
 		return err
 	}
-	//data, err := os.ReadFile(steampipeAwsConfigurationFile)
-	//if err != nil {
-	//	return fmt.Errorf("unable to prepare aws credentials on configuration: %w", err)
-	//}
-	//
-	//dataAsString := strings.ReplaceAll(string(data), "{{ACCESS_KEY}}", access)
-	//dataAsString = strings.ReplaceAll(dataAsString, "{{SECRET_KEY}}", secret)
-	//dataAsString = strings.ReplaceAll(dataAsString, "{{SESSION_TOKEN}}", sessionToken)
-	//
-	//if err = os.WriteFile(steampipeAwsConfigurationFile, []byte(dataAsString), 0o600); err != nil {
-	//	return fmt.Errorf("unable to prepare aws config file: %w", err)
-	//}
 
 	return nil
 }
@@ -240,9 +209,22 @@ func replaceSpcConfigs(access, secret, sessionToken string) error {
 		return fmt.Errorf("unable to prepare aws credentials on configuration: %w", err)
 	}
 
-	dataAsString := strings.ReplaceAll(string(data), "{{ACCESS_KEY}}", access)
-	dataAsString = strings.ReplaceAll(dataAsString, "{{SECRET_KEY}}", secret)
-	dataAsString = strings.ReplaceAll(dataAsString, "{{SESSION_TOKEN}}", sessionToken)
+	var accessReplace, secretReplace, sessionReplace string
+	dataAsString := string(data)
+	if access != "" {
+		accessReplace = fmt.Sprintf(`access_key = "%s"`, access)
+	}
+	dataAsString = strings.ReplaceAll(dataAsString, "{{ACCESS_KEY}}", accessReplace)
+
+	if secret != "" {
+		secretReplace = fmt.Sprintf(`secret_key = "%s"`, secret)
+	}
+	dataAsString = strings.ReplaceAll(dataAsString, "{{SECRET_KEY}}", secretReplace)
+
+	if sessionToken != "" {
+		sessionReplace = fmt.Sprintf(`session_token = "%s"`, sessionToken)
+	}
+	dataAsString = strings.ReplaceAll(dataAsString, "{{SESSION_TOKEN}}", sessionReplace)
 
 	if err = os.WriteFile(steampipeAwsConfigurationFile, []byte(dataAsString), 0o600); err != nil {
 		return fmt.Errorf("unable to prepare aws config file: %w", err)

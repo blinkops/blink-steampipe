@@ -9,9 +9,7 @@ if [ "${1:0}" != 'steampipe' ]; then
     set -- steampipe "$@"
 fi
 
-touch /home/steampipe/.env
-
-if [[ $(/home/steampipe/bin/generate && . /home/steampipe/.env) -ne 0 ]]; then
+if [[ $(/home/steampipe/bin/generate) -ne 0 ]]; then
   exit 1
 fi
 
