@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -29,6 +30,8 @@ const (
 	awsDefaultRegionEnvVariable = "AWS_DEFAULT_REGION"
 	awsAccessKeyIdEnv           = "AWS_ACCESS_KEY_ID"
 	awsSecretAccessKeyEnv       = "AWS_SECRET_ACCESS_KEY"
+
+	steampipeAwsConfigurationFile = "/home/steampipe/.steampipe/config/aws.spc"
 )
 
 const (
@@ -52,38 +55,55 @@ func (gen AWSCredentialGenerator) generate() error {
 		return nil
 	}
 
+	var access, secret, sessionToken string
+
 	base, subBase := gen.detect()
 	switch base {
 	case awsUserBased: // Implemented automatically via aws cli
+		access, secret, sessionToken = os.Getenv(awsAccessKeyId), os.Getenv(awsSecretAccessKey), ""
 	case awsRoleBased:
 		sessionRegion := gen.getSessionRegion()
 		roleArn, externalId := os.Getenv(awsRoleArn), os.Getenv(awsExternalID)
 
 		svc := gen.initSTSClient(subBase, sessionRegion)
 
-		access, secret, sessionToken, err := gen.assumeRole(svc, subBase, roleArn, externalId)
+		var err error
+		access, secret, sessionToken, err = gen.assumeRole(svc, subBase, roleArn, externalId)
 		if err != nil {
 			return fmt.Errorf("unable to assume role with error: %w", err)
 		}
 
-		variables := []Variable{
-			{
-				Key:   awsAccessKeyIdEnv,
-				Value: access,
-			},
-			{
-				Key:   awsSecretAccessKeyEnv,
-				Value: secret,
-			},
-			{
-				Key:   awsSessionToken,
-				Value: sessionToken,
-			},
-		}
-
-		return WriteEnvFile(variables...)
+		//variables := []Variable{
+		//	{
+		//		Key:   awsAccessKeyIdEnv,
+		//		Value: access,
+		//	},
+		//	{
+		//		Key:   awsSecretAccessKeyEnv,
+		//		Value: secret,
+		//	},
+		//	{
+		//		Key:   awsSessionToken,
+		//		Value: sessionToken,
+		//	},
+		//}
+		//
+		//return WriteEnvFile(variables...)
 	default:
 		return errors.New("invalid aws connection was provided")
+	}
+
+	data, err := os.ReadFile(steampipeAwsConfigurationFile)
+	if err != nil {
+		return fmt.Errorf("unable to prepare aws credentials on configuration: %w", err)
+	}
+
+	dataAsString := strings.ReplaceAll(string(data), "{{ACCESS_KEY}}", access)
+	dataAsString = strings.ReplaceAll(dataAsString, "{{SECRET_KEY}}", secret)
+	dataAsString = strings.ReplaceAll(dataAsString, "{{SESSION_TOKEN}}", sessionToken)
+
+	if err = os.WriteFile(steampipeAwsConfigurationFile, []byte(dataAsString), 0o600); err != nil {
+		return fmt.Errorf("unable to prepare aws config file: %w", err)
 	}
 
 	return nil
