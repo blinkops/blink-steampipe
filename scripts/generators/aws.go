@@ -52,6 +52,12 @@ func (gen AWSCredentialGenerator) Generate() error {
 
 func (gen AWSCredentialGenerator) generate() error {
 	if _, ok := os.LookupEnv(awsConnectionIdentifier); !ok {
+
+		// we need to replace the configs in case of AWS Query without connection
+		// such as with EC2 runner
+		if err := replaceSpcConfigs("", "", ""); err != nil {
+			log.Tracef("failed repalce aws credentials %v", err)
+		}
 		return nil
 	}
 
