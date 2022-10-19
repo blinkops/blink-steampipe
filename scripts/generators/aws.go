@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -18,15 +19,16 @@ import (
 
 const (
 	awsConnectionIdentifier     = "AWS_CONNECTION"
-	awsAccessKeyId              = "AWS_ACCESS_KEY_ID"
-	awsSecretAccessKey          = "AWS_SECRET_ACCESS_KEY"
+	awsAccessKeyId              = "ACCESS_KEY_ID"
+	awsSecretAccessKey          = "SECRET_ACCESS_KEY"
 	awsRoleArn                  = "ROLE_ARN"
 	awsExternalID               = "EXTERNAL_ID"
-	awsSessionToken             = "AWS_SESSION_TOKEN"
 	awsWebIdentityTokenFile     = "AWS_WEB_IDENTITY_TOKEN_FILE"
 	awsDefaultSessionRegion     = "eu-west-1"
 	awsRegionEnvVariable        = "AWS_REGION"
 	awsDefaultRegionEnvVariable = "AWS_DEFAULT_REGION"
+
+	steampipeAwsConfigurationFile = "/home/steampipe/.steampipe/config/aws.spc"
 )
 
 const (
@@ -41,47 +43,48 @@ type AWSCredentialGenerator struct{}
 func (gen AWSCredentialGenerator) Generate() error {
 	if err := gen.generate(); err != nil {
 		log.Tracef("failed resolving aws credentials, will try without credentials: %v", err)
+		if err := replaceSpcConfigs("", "", ""); err != nil {
+			log.Tracef("failed repalce aws credentials %v", err)
+		}
 	}
 	return nil
 }
 
 func (gen AWSCredentialGenerator) generate() error {
 	if _, ok := os.LookupEnv(awsConnectionIdentifier); !ok {
+
+		// we need to replace the configs in case of AWS Query without connection
+		// such as with EC2 runner
+		if err := replaceSpcConfigs("", "", ""); err != nil {
+			log.Tracef("failed repalce aws credentials %v", err)
+		}
 		return nil
 	}
+
+	var access, secret, sessionToken string
 
 	base, subBase := gen.detect()
 	switch base {
 	case awsUserBased: // Implemented automatically via aws cli
+		access, secret, sessionToken = os.Getenv(awsAccessKeyId), os.Getenv(awsSecretAccessKey), ""
 	case awsRoleBased:
 		sessionRegion := gen.getSessionRegion()
 		roleArn, externalId := os.Getenv(awsRoleArn), os.Getenv(awsExternalID)
 
 		svc := gen.initSTSClient(subBase, sessionRegion)
 
-		access, secret, sessionToken, err := gen.assumeRole(svc, subBase, roleArn, externalId)
+		var err error
+		access, secret, sessionToken, err = gen.assumeRole(svc, subBase, roleArn, externalId)
 		if err != nil {
 			return fmt.Errorf("unable to assume role with error: %w", err)
 		}
 
-		variables := []Variable{
-			{
-				Key:   awsAccessKeyId,
-				Value: access,
-			},
-			{
-				Key:   awsSecretAccessKey,
-				Value: secret,
-			},
-			{
-				Key:   awsSessionToken,
-				Value: sessionToken,
-			},
-		}
-
-		return WriteEnvFile(variables...)
 	default:
 		return errors.New("invalid aws connection was provided")
+	}
+
+	if err := replaceSpcConfigs(access, secret, sessionToken); err != nil {
+		return err
 	}
 
 	return nil
@@ -204,4 +207,33 @@ func (gen AWSCredentialGenerator) assumeRoleCrossAccounts(svc stsiface.STSAPI, r
 		return "", "", "", err
 	}
 	return *result.Credentials.AccessKeyId, *result.Credentials.SecretAccessKey, *result.Credentials.SessionToken, err
+}
+
+func replaceSpcConfigs(access, secret, sessionToken string) error {
+	data, err := os.ReadFile(steampipeAwsConfigurationFile)
+	if err != nil {
+		return fmt.Errorf("unable to prepare aws credentials on configuration: %w", err)
+	}
+
+	var accessReplace, secretReplace, sessionReplace string
+	dataAsString := string(data)
+	if access != "" {
+		accessReplace = fmt.Sprintf(`access_key = "%s"`, access)
+	}
+	dataAsString = strings.ReplaceAll(dataAsString, "{{ACCESS_KEY}}", accessReplace)
+
+	if secret != "" {
+		secretReplace = fmt.Sprintf(`secret_key = "%s"`, secret)
+	}
+	dataAsString = strings.ReplaceAll(dataAsString, "{{SECRET_KEY}}", secretReplace)
+
+	if sessionToken != "" {
+		sessionReplace = fmt.Sprintf(`session_token = "%s"`, sessionToken)
+	}
+	dataAsString = strings.ReplaceAll(dataAsString, "{{SESSION_TOKEN}}", sessionReplace)
+
+	if err = os.WriteFile(steampipeAwsConfigurationFile, []byte(dataAsString), 0o600); err != nil {
+		return fmt.Errorf("unable to prepare aws config file: %w", err)
+	}
+	return nil
 }
