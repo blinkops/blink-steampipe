@@ -4,6 +4,7 @@ WORKDIR /go/src/github.com/blinkops/blink-steampipe
 
 COPY go.mod go.sum Makefile ./
 COPY scripts ./scripts
+COPY internal ./internal
 
 RUN make install
 
