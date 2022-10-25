@@ -2,8 +2,9 @@ FROM golang:1.18 as builder
 
 WORKDIR /go/src/github.com/blinkops/blink-steampipe
 
-COPY ../../go.mod go.sum Makefile ./
-COPY ../../scripts ./scripts
+COPY go.mod go.sum Makefile ./
+COPY scripts ./scripts
+COPY internal ./internal
 
 RUN make install
 
@@ -20,7 +21,7 @@ RUN steampipe plugin list
 RUN steampipe query "select 1" --output csv
 
 COPY --from=builder /bin/generate /home/steampipe/bin/
-COPY ../../docker-entrypoint.sh /home/steampipe/bin
+COPY docker-entrypoint.sh /home/steampipe/bin
 
 USER root:0
 RUN chown -R steampipe /home/steampipe/bin/ /home/steampipe/.steampipe/config
