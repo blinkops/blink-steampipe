@@ -4,6 +4,7 @@ var Generators = []CredentialGenerator{
 	AWSCredentialGenerator{},
 	GCPCredentialGenerator{},
 	KubernetesCredentialGenerator{},
+	StorageCredentialsGenerator{},
 }
 
 type CredentialGenerator interface {
