@@ -18,7 +18,7 @@ const (
 	SteampipeStorageAWSToken       = "STORAGE_AWS_TOKEN"
 	SteampipeStorageAWSRegion      = "STORAGE_AWS_REGION"
 	storageDestination             = "/workspace"
-	tempDesitnation                = "/tmp"
+	tempDestination                = "/tmp"
 )
 
 type StorageCredentialsGenerator struct{}
@@ -54,7 +54,7 @@ func (gen StorageCredentialsGenerator) Generate() error {
 	}
 
 	if err := blinkaws.DownloadFileFromS3Bucket(filepath.Join(rootDir, fileID),
-		tempDesitnation,
+		tempDestination,
 		region,
 		bucket,
 		awsAccessKeyID,
@@ -63,7 +63,7 @@ func (gen StorageCredentialsGenerator) Generate() error {
 		return errors.New("download content for steampipe")
 	}
 
-	sourcePath := filepath.Join(tempDesitnation, fileID)
+	sourcePath := filepath.Join(tempDestination, fileID)
 
 	cmd := exec.Command("tar", "-xzf", sourcePath, "-C", storageDestination)
 	if _, err := cmd.Output(); err != nil {
