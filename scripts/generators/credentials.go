@@ -5,6 +5,7 @@ var Generators = []CredentialGenerator{
 	GCPCredentialGenerator{},
 	KubernetesCredentialGenerator{},
 	StorageCredentialsGenerator{},
+	FreePortGenerator{},
 }
 
 type CredentialGenerator interface {
