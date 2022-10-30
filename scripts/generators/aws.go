@@ -3,37 +3,39 @@ package generators
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"math/rand"
+	"os"
+	"strconv"
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/aws/aws-sdk-go/service/sts/stsiface"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"math/rand"
-	"os"
-	"strconv"
 )
 
 const (
 	awsConnectionIdentifier     = "AWS_CONNECTION"
-	awsAccessKeyId              = "AWS_ACCESS_KEY_ID"
-	awsSecretAccessKey          = "AWS_SECRET_ACCESS_KEY"
+	awsAccessKeyId              = "ACCESS_KEY_ID"
+	awsSecretAccessKey          = "SECRET_ACCESS_KEY"
 	awsRoleArn                  = "ROLE_ARN"
 	awsExternalID               = "EXTERNAL_ID"
-	awsSessionToken             = "AWS_SESSION_TOKEN"
 	awsWebIdentityTokenFile     = "AWS_WEB_IDENTITY_TOKEN_FILE"
 	awsDefaultSessionRegion     = "eu-west-1"
 	awsRegionEnvVariable        = "AWS_REGION"
 	awsDefaultRegionEnvVariable = "AWS_DEFAULT_REGION"
+
+	steampipeAwsConfigurationFile = "/home/steampipe/.steampipe/config/aws.spc"
 )
 
 const (
-	awsUserBased          = "user_based"
-	awsRoleBased          = "role_based"
-	assumeWebIdentity     = "assume_web_identity"
-	assumeCrossAccount    = "assume_cross_account"
-	assumeTrustedIdentity = "assume_trusted_identity"
+	awsUserBased       = "user_based"
+	awsRoleBased       = "role_based"
+	assumeCrossAccount = "assume_cross_account"
+	assumeIdentity     = "assume_identity"
 )
 
 type AWSCredentialGenerator struct{}
@@ -41,47 +43,48 @@ type AWSCredentialGenerator struct{}
 func (gen AWSCredentialGenerator) Generate() error {
 	if err := gen.generate(); err != nil {
 		log.Tracef("failed resolving aws credentials, will try without credentials: %v", err)
+		if err := replaceSpcConfigs("", "", ""); err != nil {
+			log.Tracef("failed repalce aws credentials %v", err)
+		}
 	}
 	return nil
 }
 
 func (gen AWSCredentialGenerator) generate() error {
 	if _, ok := os.LookupEnv(awsConnectionIdentifier); !ok {
+
+		// we need to replace the configs in case of AWS Query without connection
+		// such as with EC2 runner
+		if err := replaceSpcConfigs("", "", ""); err != nil {
+			log.Tracef("failed repalce aws credentials %v", err)
+		}
 		return nil
 	}
+
+	var access, secret, sessionToken string
 
 	base, subBase := gen.detect()
 	switch base {
 	case awsUserBased: // Implemented automatically via aws cli
+		access, secret, sessionToken = os.Getenv(awsAccessKeyId), os.Getenv(awsSecretAccessKey), ""
 	case awsRoleBased:
 		sessionRegion := gen.getSessionRegion()
 		roleArn, externalId := os.Getenv(awsRoleArn), os.Getenv(awsExternalID)
 
 		svc := gen.initSTSClient(subBase, sessionRegion)
 
-		access, secret, sessionToken, err := gen.assumeRole(svc, subBase, roleArn, externalId)
+		var err error
+		access, secret, sessionToken, err = gen.assumeRole(svc, subBase, roleArn, externalId)
 		if err != nil {
 			return fmt.Errorf("unable to assume role with error: %w", err)
 		}
 
-		variables := []Variable{
-			{
-				Key:   awsAccessKeyId,
-				Value: access,
-			},
-			{
-				Key:   awsSecretAccessKey,
-				Value: secret,
-			},
-			{
-				Key:   awsSessionToken,
-				Value: sessionToken,
-			},
-		}
-
-		return WriteEnvFile(variables...)
 	default:
 		return errors.New("invalid aws connection was provided")
+	}
+
+	if err := replaceSpcConfigs(access, secret, sessionToken); err != nil {
+		return err
 	}
 
 	return nil
@@ -108,11 +111,7 @@ func (gen AWSCredentialGenerator) detect() (base, sub string) {
 		return awsRoleBased, assumeCrossAccount
 	}
 
-	if externalId := os.Getenv(awsExternalID); externalId != "" {
-		return awsRoleBased, assumeTrustedIdentity
-	}
-
-	return awsRoleBased, assumeWebIdentity
+	return awsRoleBased, assumeIdentity
 }
 
 func (gen AWSCredentialGenerator) initSTSClient(subBase, region string) stsiface.STSAPI {
@@ -132,14 +131,25 @@ func (gen AWSCredentialGenerator) assumeRole(svc stsiface.STSAPI, subBase, role,
 	sessionName := strconv.Itoa(rand.Int())
 
 	switch subBase {
-	case assumeWebIdentity:
-		return gen.assumeRoleWithWebIdentity(svc, role, sessionName)
-	case assumeTrustedIdentity:
-		return gen.assumeRoleWithTrustedIdentity(svc, role, externalID, sessionName)
+	case assumeIdentity:
+		return gen.assumeRoleWithIdentity(svc, role, externalID, sessionName)
 	case assumeCrossAccount:
 		return gen.assumeRoleCrossAccounts(svc, role, sessionName)
 	}
 	return "", "", "", errors.New("invalid assume role type was provided")
+}
+
+// assumeRoleWithIdentity first tries to assume a trusted identity using the role and external id, and if it doesn't
+// succeed, it falls back to assuming a web identity using only the role
+func (gen AWSCredentialGenerator) assumeRoleWithIdentity(svc stsiface.STSAPI, role, externalId, sessionName string) (string, string, string, error) {
+	log.Debugf("assuming role with identity. Trying to assume role with trusted identity first and falling back to web identity")
+	accessKey, secretAccessKey, sessionToken, err := gen.assumeRoleWithTrustedIdentity(svc, role, externalId, sessionName)
+	if err != nil {
+		log.Errorf("error assuming role with trusted identity: %v", err)
+		return gen.assumeRoleWithWebIdentity(svc, role, sessionName)
+	}
+
+	return accessKey, secretAccessKey, sessionToken, nil
 }
 
 func (gen AWSCredentialGenerator) assumeRoleWithWebIdentity(svc stsiface.STSAPI, role, sessionName string) (string, string, string, error) {
@@ -197,4 +207,33 @@ func (gen AWSCredentialGenerator) assumeRoleCrossAccounts(svc stsiface.STSAPI, r
 		return "", "", "", err
 	}
 	return *result.Credentials.AccessKeyId, *result.Credentials.SecretAccessKey, *result.Credentials.SessionToken, err
+}
+
+func replaceSpcConfigs(access, secret, sessionToken string) error {
+	data, err := os.ReadFile(steampipeAwsConfigurationFile)
+	if err != nil {
+		return fmt.Errorf("unable to prepare aws credentials on configuration: %w", err)
+	}
+
+	var accessReplace, secretReplace, sessionReplace string
+	dataAsString := string(data)
+	if access != "" {
+		accessReplace = fmt.Sprintf(`access_key = "%s"`, access)
+	}
+	dataAsString = strings.ReplaceAll(dataAsString, "{{ACCESS_KEY}}", accessReplace)
+
+	if secret != "" {
+		secretReplace = fmt.Sprintf(`secret_key = "%s"`, secret)
+	}
+	dataAsString = strings.ReplaceAll(dataAsString, "{{SECRET_KEY}}", secretReplace)
+
+	if sessionToken != "" {
+		sessionReplace = fmt.Sprintf(`session_token = "%s"`, sessionToken)
+	}
+	dataAsString = strings.ReplaceAll(dataAsString, "{{SESSION_TOKEN}}", sessionReplace)
+
+	if err = os.WriteFile(steampipeAwsConfigurationFile, []byte(dataAsString), 0o600); err != nil {
+		return fmt.Errorf("unable to prepare aws config file: %w", err)
+	}
+	return nil
 }
