@@ -1,4 +1,4 @@
 options "database" {
-  port = 9191
+  port = {{FREE_PORT}}
   listen = "local"                  # local, network
 }
