@@ -32,9 +32,9 @@ const (
 )
 
 const (
-	awsTrustedIdentityCredsAccessKeyId     = "trusted_identity_access_key_id"
-	awsTrustedIdentityCredsAccessSecretKey = "trusted_identity_access_secret_key"
-	awsTrustedIdentityCredsSessionToken    = "trusted_identity_session_token"
+	awsTrustedIdentityCredsAccessKeyId     = "TRUSTED_IDENTITY_ACCESS_KEY_ID"
+	awsTrustedIdentityCredsAccessSecretKey = "TRUSTED_IDENTITY_ACCESS_SECRET_KEY"
+	awsTrustedIdentityCredsSessionToken    = "TRUSTED_IDENTITY_SESSION_TOKEN"
 )
 
 const (
@@ -262,6 +262,7 @@ func (gen AWSCredentialGenerator) initCredentialsMap() map[string]string {
 	return map[string]string{
 		awsAccessKeyId:                         os.Getenv(awsAccessKeyId),
 		awsSecretAccessKey:                     os.Getenv(awsSecretAccessKey),
+		awsRoleArn:                             os.Getenv(awsRoleArn),
 		awsExternalID:                          os.Getenv(awsExternalID),
 		awsTrustedIdentityCredsAccessKeyId:     os.Getenv(awsTrustedIdentityCredsAccessKeyId),
 		awsTrustedIdentityCredsAccessSecretKey: os.Getenv(awsTrustedIdentityCredsAccessSecretKey),
