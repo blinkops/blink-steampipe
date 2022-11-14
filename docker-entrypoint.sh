@@ -9,8 +9,6 @@ if [ "${1:0}" != 'steampipe' ]; then
     set -- steampipe "$@"
 fi
 
-if [[ $(/home/steampipe/bin/generate) -ne 0 ]]; then
-  exit 1
-fi
+touch /home/steampipe/logfile
 
-exec "$@"
+exec /home/steampipe/bin/generate "$@"
