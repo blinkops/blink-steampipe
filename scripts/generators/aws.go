@@ -126,12 +126,7 @@ func (gen AWSCredentialGenerator) getSession(region string, awsCredentials map[s
 		sessConfig.Credentials = credentials.NewStaticCredentials(awsCredentials[awsAccessKeyId], awsCredentials[awsSecretAccessKey], awsCredentials[awsSessionToken])
 	}
 
-	sess, err := session.NewSession(&sessConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	return sess, nil
+	return session.NewSession(&sessConfig)
 }
 
 func (gen AWSCredentialGenerator) assumeRole(subBase, region string, awsCredentials map[string]string) (access, secret, sessionToken string, err error) {
