@@ -23,16 +23,19 @@ func SetUpLogger() error {
 
 	log.SetLevel(level)
 
+	var logFile *os.File
 	// If the output isn't stdout it should be a file path
-	if _, err = os.Stat(logOutputFile); err != nil && errors.Is(err, os.ErrNotExist) {
-		if err = os.WriteFile(logOutputFile, nil, 0o600); err != nil {
-			return errors.Wrapf(err, " failed to create log file")
+	if _, err = os.Stat(logOutputFile); err == nil {
+		logFile, err = os.OpenFile(logOutputFile, os.O_CREATE|os.O_WRONLY, 0o600)
+		if err != nil {
+			return errors.Wrapf(err, "failed to open log file %s for output", logOutputFile)
 		}
-	}
-
-	logFile, err := os.OpenFile(logOutputFile, os.O_CREATE|os.O_WRONLY, 0o600)
-	if err != nil {
-		return errors.Wrapf(err, "failed to open log file %s for output", logOutputFile)
+	} else if err != nil && errors.Is(err, os.ErrNotExist) {
+		if logFile, err = os.Create(logOutputFile); err != nil {
+			return errors.Wrap(err, "failed to create log file")
+		}
+	} else {
+		return errors.Errorf("failed to find log file '%s' for output", logOutputFile)
 	}
 
 	log.SetOutput(logFile)
