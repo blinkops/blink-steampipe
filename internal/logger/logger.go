@@ -24,25 +24,27 @@ func SetUpLogger() error {
 	log.SetLevel(level)
 
 	// If the output isn't stdout it should be a file path
-	if _, err := os.Stat(logOutputFile); err == nil {
-		logFile, err := os.OpenFile(logOutputFile, os.O_CREATE|os.O_WRONLY, 0o600)
-		if err != nil {
-			return errors.Wrapf(err, "Failed to open log file %s for output", logOutputFile)
+	if _, err = os.Stat(logOutputFile); err != nil && errors.Is(err, os.ErrNotExist) {
+		if err = os.WriteFile(logOutputFile, nil, 0o600); err != nil {
+			return errors.Wrapf(err, " failed to create log file")
 		}
-
-		log.SetOutput(logFile)
-		log.RegisterExitHandler(func() {
-			if logFile == nil {
-				return
-			}
-			err := logFile.Close()
-			if err != nil {
-				return
-			}
-		})
-	} else if errors.Is(err, os.ErrNotExist) {
-		return errors.Errorf("Failed to find log file '%s' for output", logOutputFile)
 	}
+
+	logFile, err := os.OpenFile(logOutputFile, os.O_CREATE|os.O_WRONLY, 0o600)
+	if err != nil {
+		return errors.Wrapf(err, "failed to open log file %s for output", logOutputFile)
+	}
+
+	log.SetOutput(logFile)
+	log.RegisterExitHandler(func() {
+		if logFile == nil {
+			return
+		}
+		err = logFile.Close()
+		if err != nil {
+			return
+		}
+	})
 
 	log.SetFormatter(&log.TextFormatter{
 		TimestampFormat: timestampFormat,
