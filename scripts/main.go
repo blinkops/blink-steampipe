@@ -32,7 +32,7 @@ func main() {
 	cmdArgs := os.Args[2:]
 
 	cmd := exec.Command(cmdName, cmdArgs...)
-	output, err := cmd.Output()
+	output, err := cmd.CombinedOutput()
 	if err != nil {
 		logrus.Error(err)
 		response_wrapper.HandleResponse(string(output), logger.GetLogs())
