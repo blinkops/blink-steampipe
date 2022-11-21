@@ -35,7 +35,7 @@ func main() {
 	output, err := cmd.Output()
 	if err != nil {
 		logrus.Error(err)
-		response_wrapper.HandleResponse("", logger.GetLogs())
+		response_wrapper.HandleResponse(string(output), logger.GetLogs())
 		os.Exit(1)
 	}
 
