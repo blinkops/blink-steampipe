@@ -5,7 +5,7 @@ import (
 	"github.com/blinkops/blink-steampipe/internal/logger"
 	"github.com/blinkops/blink-steampipe/internal/response_wrapper"
 	"github.com/blinkops/blink-steampipe/scripts/generators"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"os/exec"
 )
@@ -18,7 +18,7 @@ func main() {
 
 	for _, credentialGenerator := range generators.Generators {
 		if err := credentialGenerator.Generate(); err != nil {
-			logrus.Errorf("failed generate credentials: %v", err)
+			log.Errorf("failed generate credentials: %v", err)
 			response_wrapper.HandleResponse("", logger.GetLogs(), true)
 			os.Exit(1)
 		}
@@ -26,7 +26,7 @@ func main() {
 
 	cmdName := os.Args[1]
 	if cmdName == "" {
-		logrus.Error("no command provided")
+		log.Error("no command provided")
 		response_wrapper.HandleResponse("", logger.GetLogs(), true)
 		os.Exit(1)
 	}
@@ -35,7 +35,7 @@ func main() {
 	cmd := exec.Command(cmdName, cmdArgs...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		logrus.Errorf("execute command: %v", err)
+		log.Errorf("execute command: %v", err)
 		response_wrapper.HandleResponse(string(output), logger.GetLogs(), true)
 		os.Exit(1)
 	}
