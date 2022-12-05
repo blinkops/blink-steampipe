@@ -9,7 +9,7 @@ import (
 
 const (
 	// Logger Config
-	logLevel      = "info"
+	logLevel      = "debug"
 	logOutputFile = "/home/steampipe/logfile"
 
 	timestampFormat = "02-01-2006 15:04:05.000Z"
