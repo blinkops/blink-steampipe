@@ -48,9 +48,9 @@ type AWSCredentialGenerator struct{}
 
 func (gen AWSCredentialGenerator) Generate() error {
 	if err := gen.generate(); err != nil {
-		log.Tracef("failed resolving aws credentials, will try without credentials: %v", err)
-		if err := replaceSpcConfigs("", "", ""); err != nil {
-			log.Tracef("failed repalce aws credentials %v", err)
+		log.Debugf("failed resolving aws credentials, will try without credentials: %v", err)
+		if err = replaceSpcConfigs("", "", ""); err != nil {
+			log.Errorf("failed repalce aws credentials %v", err)
 		}
 	}
 	return nil
@@ -62,7 +62,7 @@ func (gen AWSCredentialGenerator) generate() error {
 		// we need to replace the configs in case of AWS Query without connection
 		// such as with EC2 runner
 		if err := replaceSpcConfigs("", "", ""); err != nil {
-			log.Tracef("failed repalce aws credentials %v", err)
+			log.Errorf("failed repalce aws credentials %v", err)
 		}
 		return nil
 	}
