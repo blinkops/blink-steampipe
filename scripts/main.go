@@ -13,14 +13,14 @@ import (
 func main() {
 	if err := logger.SetUpLogger(); err != nil {
 		response_wrapper.HandleResponse("", fmt.Sprintf("set up logger: %v", err.Error()), true)
-		os.Exit(1)
+		os.Exit(0)
 	}
 
 	for _, credentialGenerator := range generators.Generators {
 		if err := credentialGenerator.Generate(); err != nil {
 			log.Errorf("failed generate credentials: %v", err)
 			response_wrapper.HandleResponse("", logger.GetLogs(), true)
-			os.Exit(1)
+			os.Exit(0)
 		}
 	}
 
@@ -28,7 +28,7 @@ func main() {
 	if cmdName == "" {
 		log.Error("no command provided")
 		response_wrapper.HandleResponse("", logger.GetLogs(), true)
-		os.Exit(1)
+		os.Exit(0)
 	}
 	cmdArgs := os.Args[2:]
 
@@ -37,7 +37,7 @@ func main() {
 	if err != nil {
 		log.Errorf("execute command: %v", err)
 		response_wrapper.HandleResponse(string(output), logger.GetLogs(), true)
-		os.Exit(1)
+		os.Exit(0)
 	}
 
 	response_wrapper.HandleResponse(string(output), logger.GetLogs(), false)
