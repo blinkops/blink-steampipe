@@ -1,6 +1,7 @@
 package generators
 
 import (
+	"encoding/pem"
 	"fmt"
 	"os"
 	"strings"
@@ -57,12 +58,16 @@ func (gen OCICredentialGenerator) generateJSONCredentials() error {
 	}
 	region := splitAPIAddress[1] // region is extracted from the API address - same behavior as HTTP
 
-	// we write private RSA key to a file in the specified path we hard-coded to the oci.spc file
+	// write private RSA key to a file in the specified path we hard-coded to the oci.spc file
 	if err := os.MkdirAll(ociPkeyFileDirPath, 0o770); err != nil {
 		return fmt.Errorf("unable to prepare oci credentials path: %v", err)
 	}
-	if err := os.WriteFile(ociPkeyFileDirPath+ociPkeyFile, []byte(pkey), 0o600); err != nil {
-		return fmt.Errorf("unable to prepare oci pkey file: %w", err)
+	certOut, err := os.Create(ociPkeyFileDirPath + ociPkeyFile)
+	if err != nil {
+		return fmt.Errorf("unable to prepare oci credentials file: %v", err)
+	}
+	if err := pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: []byte(pkey)}); err != nil {
+		return fmt.Errorf("unable to add pkey to oci credentials file: %v", err)
 	}
 
 	// add all connection params to the oci.spc file before overwriting it
