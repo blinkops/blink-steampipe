@@ -10,7 +10,7 @@ RUN make install
 
 FROM turbot/steampipe:0.16.1
 
-# Install the aws and steampipe plugins for Steampipe (as steampipe user).
+# Install the gcp and steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0
 RUN steampipe plugin install gcp@0.26.0
 
