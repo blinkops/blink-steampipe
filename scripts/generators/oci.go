@@ -2,7 +2,6 @@ package generators
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"os"
 	"strings"
 )
@@ -58,8 +57,6 @@ func (gen OCICredentialGenerator) generateJSONCredentials() error {
 	}
 	region := splitAPIAddress[1] // region is extracted from the API address - same behavior as HTTP
 
-	logrus.Debugf("tenancyOcid: %s, userOcid: %s, fingerprint: %s, region: %s, pkey: %s", tenancyOcid, userOcid, fingerprint, region, pkey)
-
 	// write private RSA key to a file in the specified path we hard-coded to the oci.spc file
 	if err := os.MkdirAll(ociPkeyFileDirPath, 0o770); err != nil {
 		return fmt.Errorf("unable to prepare oci credentials path: %v", err)
@@ -75,8 +72,6 @@ func (gen OCICredentialGenerator) generateJSONCredentials() error {
 	}
 	paramsReplacer := strings.NewReplacer("{{TENANCY_OCID}}", tenancyOcid, "{{USER_OCID}}", userOcid, "{{FINGERPRINT}}", fingerprint, "{{REGION}}", region)
 	dataAsString := paramsReplacer.Replace(string(data))
-
-	logrus.Debug(dataAsString)
 
 	if err = os.WriteFile(ociSteampipeConfigurationFile, []byte(dataAsString), 0o600); err != nil {
 		return fmt.Errorf("unable to prepare oci config file: %w", err)

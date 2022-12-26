@@ -18,6 +18,7 @@ COPY --from=builder /bin/generate /home/steampipe/bin/
 COPY docker-entrypoint.sh /home/steampipe/bin
 
 USER root:0
+COPY config/oci.spc /home/steampipe/.steampipe/config/oci.spc
 COPY config/db.spc /home/steampipe/.steampipe/config/db.spc
 RUN chown -R steampipe /home/steampipe/bin/ /home/steampipe/.steampipe/config
 RUN chmod -R +x /home/steampipe/bin/
