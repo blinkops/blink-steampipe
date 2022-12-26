@@ -1,8 +1,8 @@
 package generators
 
 import (
-	"encoding/pem"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"os"
 	"strings"
 )
@@ -58,16 +58,14 @@ func (gen OCICredentialGenerator) generateJSONCredentials() error {
 	}
 	region := splitAPIAddress[1] // region is extracted from the API address - same behavior as HTTP
 
+	logrus.Debugf("tenancyOcid: %s, userOcid: %s, fingerprint: %s, region: %s, pkey: %s", tenancyOcid, userOcid, fingerprint, region, pkey)
+
 	// write private RSA key to a file in the specified path we hard-coded to the oci.spc file
 	if err := os.MkdirAll(ociPkeyFileDirPath, 0o770); err != nil {
 		return fmt.Errorf("unable to prepare oci credentials path: %v", err)
 	}
-	certOut, err := os.Create(ociPkeyFileDirPath + ociPkeyFile)
-	if err != nil {
-		return fmt.Errorf("unable to prepare oci credentials file: %v", err)
-	}
-	if err := pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: []byte(pkey)}); err != nil {
-		return fmt.Errorf("unable to add pkey to oci credentials file: %v", err)
+	if err := os.WriteFile(ociPkeyFileDirPath+ociPkeyFile, []byte(pkey), 0o600); err != nil {
+		return fmt.Errorf("unable to prepare oci pkey config file: %w", err)
 	}
 
 	// add all connection params to the oci.spc file before overwriting it
@@ -75,12 +73,13 @@ func (gen OCICredentialGenerator) generateJSONCredentials() error {
 	if err != nil {
 		return fmt.Errorf("unable to prepare gcp credentials on configuration: %w", err)
 	}
-
 	var paramsReplacer = strings.NewReplacer("{{TENANCY_OCID}}", tenancyOcid, "{{USER_OCID}}", userOcid, "{{FINGERPRINT}}", fingerprint, "{{REGION}}", region)
 	dataAsString := paramsReplacer.Replace(string(data))
+
+	logrus.Debug(dataAsString)
+
 	if err = os.WriteFile(ociSteampipeConfigurationFile, []byte(dataAsString), 0o600); err != nil {
 		return fmt.Errorf("unable to prepare oci config file: %w", err)
 	}
-
 	return nil
 }
