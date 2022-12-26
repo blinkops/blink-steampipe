@@ -14,12 +14,6 @@ FROM turbot/steampipe:0.16.1
 USER steampipe:0
 RUN steampipe plugin install gcp@0.26.0
 
-# Validate steampipe is running
-RUN steampipe plugin list
-
-# Sanity check
-RUN steampipe query "select 1" --output csv
-
 COPY --from=builder /bin/generate /home/steampipe/bin/
 COPY docker-entrypoint.sh /home/steampipe/bin
 
