@@ -16,7 +16,7 @@ const (
 
 	ociSteampipeConfigurationFile = "/home/steampipe/.steampipe/config/oci.spc"
 
-	ociPkeyFileDirPath = "/home/.ssh/"
+	ociPkeyFileDirPath = "/home/steampipe/.ssh/"
 	ociPkeyFile        = "oci_private.pem"
 )
 
