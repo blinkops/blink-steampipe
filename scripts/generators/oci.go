@@ -3,6 +3,7 @@ package generators
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -16,7 +17,7 @@ const (
 
 	ociSteampipeConfigurationFile = "/home/steampipe/.steampipe/config/oci.spc"
 
-	ociPkeyFileDirPath = "/home/steampipe/.ssh/"
+	ociPkeyFileDirPath = "/home/steampipe/.ssh"
 	ociPkeyFile        = "oci_private.pem"
 )
 
@@ -61,7 +62,7 @@ func (gen OCICredentialGenerator) generateJSONCredentials() error {
 	if err := os.MkdirAll(ociPkeyFileDirPath, 0o770); err != nil {
 		return fmt.Errorf("unable to prepare oci credentials path: %v", err)
 	}
-	if err := os.WriteFile(ociPkeyFileDirPath+ociPkeyFile, []byte(pkey), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(ociPkeyFileDirPath, ociPkeyFile), []byte(pkey), 0o600); err != nil {
 		return fmt.Errorf("unable to prepare oci pkey config file: %w", err)
 	}
 
