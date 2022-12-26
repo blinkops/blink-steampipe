@@ -73,7 +73,7 @@ func (gen OCICredentialGenerator) generateJSONCredentials() error {
 	if err != nil {
 		return fmt.Errorf("unable to prepare gcp credentials on configuration: %w", err)
 	}
-	var paramsReplacer = strings.NewReplacer("{{TENANCY_OCID}}", tenancyOcid, "{{USER_OCID}}", userOcid, "{{FINGERPRINT}}", fingerprint, "{{REGION}}", region)
+	paramsReplacer := strings.NewReplacer("{{TENANCY_OCID}}", tenancyOcid, "{{USER_OCID}}", userOcid, "{{FINGERPRINT}}", fingerprint, "{{REGION}}", region)
 	dataAsString := paramsReplacer.Replace(string(data))
 
 	logrus.Debug(dataAsString)
