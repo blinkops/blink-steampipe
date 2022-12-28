@@ -24,7 +24,11 @@ func main() {
 		}
 	}
 
-	cmdName := os.Args[1]
+	var cmdName string
+	if len(os.Args) > 2 {
+		cmdName = os.Args[1]
+	}
+
 	if cmdName == "" {
 		log.Error("no command provided")
 		response_wrapper.HandleResponse("", logger.GetLogs(), true)

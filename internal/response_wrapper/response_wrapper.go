@@ -16,6 +16,8 @@ const (
 
 const generalErrorMessage = "failed to initialize plugin"
 
+const responseWrapperFormat = `{"output":"%s", "log": "%s", "is_error": "%v"}`
+
 type ResponseWrapper struct {
 	Log     string `json:"log"`
 	Output  string `json:"output"`
@@ -38,7 +40,7 @@ func HandleResponse(output, log string, exitWithError bool) {
 	marshaledResponse, err := json.Marshal(resp)
 	if err != nil {
 		updatedLog := fmt.Sprintf("%s\nfailed to marshal response: %v", log, err.Error())
-		fmt.Printf(`{"output":"%s", "log": "%s", "is_error": "%v"}`, resp.Output, updatedLog, resp.IsError)
+		fmt.Printf(responseWrapperFormat, resp.Output, updatedLog, resp.IsError)
 		return
 	}
 
