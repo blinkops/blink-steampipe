@@ -40,12 +40,8 @@ func SetUpLogger() error {
 
 	log.SetOutput(logFile)
 	log.RegisterExitHandler(func() {
-		if logFile == nil {
-			return
-		}
-		err = logFile.Close()
-		if err != nil {
-			return
+		if logFile != nil {
+			_ = logFile.Close() // Ignoring error because we can do nothing with it
 		}
 	})
 
