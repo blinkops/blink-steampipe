@@ -1,5 +1,5 @@
 connection "oci" {
-    plugin = "oci@0.17.2"
+    plugin           = "local/oci"
     tenancy_ocid     = "{{TENANCY_OCID}}"
     user_ocid = "{{USER_OCID}}"
     fingerprint = "{{FINGERPRINT}}"
