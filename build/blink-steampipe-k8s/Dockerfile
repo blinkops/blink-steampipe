@@ -10,15 +10,9 @@ RUN make install
 
 FROM turbot/steampipe:0.16.1
 
-# Install the aws and steampipe plugins for Steampipe (as steampipe user).
+# Install the k8s and steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0
 RUN steampipe plugin install kubernetes@0.10.0
-
-# Validate steampipe is running
-RUN steampipe plugin list
-
-# Sanity check
-RUN steampipe query "select 1" --output csv
 
 COPY --from=builder /bin/generate /home/steampipe/bin/
 COPY docker-entrypoint.sh /home/steampipe/bin
