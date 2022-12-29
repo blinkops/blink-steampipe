@@ -25,6 +25,7 @@ COPY docker-entrypoint.sh /home/steampipe/bin
 
 USER root:0
 COPY config /home/steampipe/.steampipe/config/
+COPY plugins/local/oci/oci.plugin /home/steampipe/.steampipe/plugins/local/oci/oci.plugin
 RUN chown -R steampipe /home/steampipe/bin/ /home/steampipe/.steampipe/config
 RUN chmod -R +x /home/steampipe/bin/
 RUN chown steampipe /home/steampipe/bin/docker-entrypoint.sh
