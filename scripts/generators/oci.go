@@ -69,7 +69,7 @@ func (gen OCICredentialGenerator) generateJSONCredentials() error {
 	// add all connection params to the oci.spc file before overwriting it
 	data, err := os.ReadFile(ociSteampipeConfigurationFile)
 	if err != nil {
-		return fmt.Errorf("unable to prepare gcp credentials on configuration: %w", err)
+		return fmt.Errorf("unable to prepare oci credentials on configuration: %w", err)
 	}
 	paramsReplacer := strings.NewReplacer("{{TENANCY_OCID}}", tenancyOcid, "{{USER_OCID}}", userOcid, "{{FINGERPRINT}}", fingerprint, "{{REGION}}", region)
 	dataAsString := paramsReplacer.Replace(string(data))
