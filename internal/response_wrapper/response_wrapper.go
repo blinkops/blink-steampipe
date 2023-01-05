@@ -72,7 +72,11 @@ func formatErrorMessage(result string) (msg string, isError bool) {
 			return "Connection doesn't have permissions to run specified query", isError
 		}
 
-		if strings.Contains(lowerMessage, "connection") || strings.Contains(lowerMessage, "credential") {
+		if strings.Contains(lowerMessage, "invalid regions") {
+			return "Connection has unsupported regions", isError
+		}
+
+		if strings.Contains(lowerMessage, "connection") || strings.Contains(lowerMessage, "credential") || strings.Contains(lowerMessage, "no such host") {
 			return "Invalid connection was provided", isError
 		}
 
