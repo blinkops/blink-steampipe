@@ -73,7 +73,7 @@ func formatErrorMessage(result string) (msg string, isError bool) {
 		}
 
 		if strings.Contains(lowerMessage, "invalid regions") {
-			return "Connection have unsupported regions", isError
+			return "Connection has unsupported regions", isError
 		}
 
 		if strings.Contains(lowerMessage, "connection") || strings.Contains(lowerMessage, "credential") || strings.Contains(lowerMessage, "no such host") {
