@@ -2,6 +2,7 @@ package generators
 
 import (
 	"fmt"
+	"github.com/blinkops/blink-steampipe/scripts/consts"
 	"os"
 	"strconv"
 
@@ -14,7 +15,7 @@ const (
 	kubernetesApiUrl               = "KUBERNETES_API_URL"
 	kubernetesBearerToken          = "KUBERNETES_BEARER_TOKEN"
 	kubernetesVerifyCertificate    = "KUBERNETES_VERIFY_CERTIFICATE"
-	kubeConfigDirectoryPath        = "/home/steampipe/.kube/"
+	kubeConfigDirectoryPath        = consts.SteampipeBasePath + ".kube/"
 	kubeConfigFilePath             = kubeConfigDirectoryPath + "config"
 )
 

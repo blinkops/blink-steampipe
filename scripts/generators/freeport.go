@@ -2,13 +2,14 @@ package generators
 
 import (
 	"fmt"
+	"github.com/blinkops/blink-steampipe/scripts/consts"
 	"github.com/phayes/freeport"
 	"os"
 	"strconv"
 	"strings"
 )
 
-const steampipeDBConfigurationFile = "/home/steampipe/.steampipe/config/db.spc"
+const steampipeDBConfigurationFile = consts.SteampipeSpcConfigurationPath + "db.spc"
 
 type FreePortGenerator struct{}
 

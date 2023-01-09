@@ -2,6 +2,7 @@ package generators
 
 import (
 	"fmt"
+	"github.com/blinkops/blink-steampipe/scripts/consts"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,10 +16,9 @@ const (
 	ociPkey                 = "PKEY"
 	ociAPIAddress           = "API_ADDRESS"
 
-	ociSteampipeConfigurationFile = "/home/steampipe/.steampipe/config/oci.spc"
-
-	ociPkeyFileDirPath = "/home/steampipe/.ssh"
-	ociPkeyFile        = "oci_private.pem"
+	ociSteampipeConfigurationFile = consts.SteampipeSpcConfigurationPath + "oci.spc"
+	ociPkeyFileDirPath            = consts.SteampipeBasePath + ".ssh"
+	ociPkeyFile                   = "oci_private.pem"
 )
 
 type OCICredentialGenerator struct{}
