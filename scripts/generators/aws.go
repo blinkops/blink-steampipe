@@ -2,6 +2,7 @@ package generators
 
 import (
 	"fmt"
+	"github.com/blinkops/blink-steampipe/scripts/consts"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -28,7 +29,7 @@ const (
 	awsRegionEnvVariable        = "AWS_REGION"
 	awsDefaultRegionEnvVariable = "AWS_DEFAULT_REGION"
 
-	steampipeAwsConfigurationFile = "/home/steampipe/.steampipe/config/aws.spc"
+	steampipeAwsConfigurationFile = consts.SteampipeSpcConfigurationPath + "aws.spc"
 )
 
 const (

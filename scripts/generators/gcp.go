@@ -3,6 +3,7 @@ package generators
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/blinkops/blink-steampipe/scripts/consts"
 	"os"
 	"strings"
 )
@@ -11,8 +12,8 @@ const (
 	gcpConnectionIdentifier          = "GCP_CONNECTION"
 	gcpJsonCredential                = "GOOGLE_CREDENTIALS"
 	gcpProjectIdKey                  = "project_id"
-	steampipeGcpConfigurationFile    = "/home/steampipe/.steampipe/config/gcp.spc"
-	gcpCredentialDirectoryPathFormat = "/home/steampipe/.config/gcloud/"
+	steampipeGcpConfigurationFile    = consts.SteampipeSpcConfigurationPath + "gcp.spc"
+	gcpCredentialDirectoryPathFormat = consts.SteampipeBasePath + ".config/gcloud/"
 	gcpCredentialFileName            = "application_default_credentials.json"
 )
 
