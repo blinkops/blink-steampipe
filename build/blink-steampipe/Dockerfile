@@ -12,7 +12,7 @@ FROM turbot/steampipe:0.16.1
 
 # Install steampipe and all steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0
-RUN steampipe plugin install aws@0.76.0 github@0.19.0 azure@0.31.0 gcp@0.26.0 kubernetes@0.10.0 terraform@0.2.0 csv@0.4.1 oci@0.17.2
+RUN steampipe plugin install aws@0.90.0 github@0.25.0 azure@0.35.0 gcp@0.32.0 kubernetes@0.15.0 terraform@0.3.0 csv@0.5.0
 
 # Validate steampipe is running
 RUN steampipe plugin list

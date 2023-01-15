@@ -12,7 +12,7 @@ FROM turbot/steampipe:0.16.1
 
 # Install the k8s and steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0
-RUN steampipe plugin install kubernetes@0.10.0
+RUN steampipe plugin install kubernetes@0.15.0
 
 COPY --from=builder /bin/generate /home/steampipe/bin/
 COPY docker-entrypoint.sh /home/steampipe/bin

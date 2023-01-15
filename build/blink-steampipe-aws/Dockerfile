@@ -12,7 +12,7 @@ FROM turbot/steampipe:0.16.1
 
 # Install the aws and steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0
-RUN steampipe plugin install aws@0.76.0
+RUN steampipe plugin install aws@0.90.0
 
 COPY --from=builder /bin/generate /home/steampipe/bin/
 COPY docker-entrypoint.sh /home/steampipe/bin

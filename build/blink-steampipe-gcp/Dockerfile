@@ -12,7 +12,7 @@ FROM turbot/steampipe:0.16.1
 
 # Install the gcp and steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0
-RUN steampipe plugin install gcp@0.26.0
+RUN steampipe plugin install gcp@0.32.0
 
 COPY --from=builder /bin/generate /home/steampipe/bin/
 COPY docker-entrypoint.sh /home/steampipe/bin

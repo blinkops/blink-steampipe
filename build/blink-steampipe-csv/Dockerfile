@@ -12,7 +12,7 @@ FROM turbot/steampipe:0.16.1
 
 # Install the csv and steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0
-RUN steampipe plugin install csv@0.4.1
+RUN steampipe plugin install csv@0.5.0
 
 COPY --from=builder /bin/generate /home/steampipe/bin/
 COPY docker-entrypoint.sh /home/steampipe/bin
