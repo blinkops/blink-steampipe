@@ -1,5 +1,5 @@
 connection "terraform" {
-  plugin = "terraform@0.2.0"
+  plugin = "terraform@0.3.0"
 
   # Paths is a list of locations to search for Terraform configuration files
   # All paths are resolved relative to the current working directory (CWD)
