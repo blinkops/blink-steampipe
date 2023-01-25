@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/exec"
+
 	"github.com/blinkops/blink-steampipe/internal/logger"
 	"github.com/blinkops/blink-steampipe/internal/response_wrapper"
 	"github.com/blinkops/blink-steampipe/scripts/generators"
 	log "github.com/sirupsen/logrus"
-	"os"
-	"os/exec"
 )
 
 func main() {
@@ -24,9 +25,10 @@ func main() {
 		}
 	}
 
-	var cmdName string
+	var cmdName, action string
 	if len(os.Args) > 2 {
 		cmdName = os.Args[1]
+		action = os.Args[2]
 	}
 
 	if cmdName == "" {
@@ -38,7 +40,7 @@ func main() {
 
 	cmd := exec.Command(cmdName, cmdArgs...)
 	output, err := cmd.CombinedOutput()
-	if err != nil {
+	if err != nil && (action != "check" || len(output) == 0) {
 		log.Errorf("execute command: %v", err)
 		response_wrapper.HandleResponse(string(output), logger.GetLogs(), true)
 		os.Exit(0)
