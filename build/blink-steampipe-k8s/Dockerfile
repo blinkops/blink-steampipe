@@ -12,7 +12,6 @@ FROM alpine/git:2.36.3 as mods
 
 WORKDIR /mods
 RUN git clone https://github.com/turbot/steampipe-mod-kubernetes-compliance --branch v0.7
-RUN git clone https://github.com/turbot/steampipe-mod-kubernetes-insights --branch v0.2
 
 FROM turbot/steampipe:0.18.2
 

@@ -12,7 +12,6 @@ FROM alpine/git:2.36.3 as mods
 
 WORKDIR /mods
 RUN git clone https://github.com/turbot/steampipe-mod-oci-compliance --branch v0.7
-RUN git clone https://github.com/turbot/steampipe-mod-oci-insights --branch v0.4
 RUN git clone https://github.com/turbot/steampipe-mod-oci-thrifty --branch v0.8
 
 FROM turbot/steampipe:0.18.2

@@ -12,7 +12,6 @@ FROM alpine/git:2.36.3 as mods
 
 WORKDIR /mods
 RUN git clone https://github.com/turbot/steampipe-mod-gcp-compliance --branch v0.13
-RUN git clone https://github.com/turbot/steampipe-mod-gcp-insights --branch v0.4
 RUN git clone https://github.com/turbot/steampipe-mod-gcp-labels --branch v0.6
 RUN git clone https://github.com/turbot/steampipe-mod-gcp-thrifty --branch v0.10
 
