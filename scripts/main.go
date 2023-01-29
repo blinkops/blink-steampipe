@@ -40,6 +40,9 @@ func main() {
 
 	cmd := exec.Command(cmdName, cmdArgs...)
 	output, err := cmd.CombinedOutput()
+
+	// some steampipe benchmark ("check") may return an error code but return a result.
+	// in such a case, we don't want the entire report to fail and display the result.
 	if err != nil && (action != "check" || len(output) == 0) {
 		log.Errorf("execute command: %v", err)
 		response_wrapper.HandleResponse(string(output), logger.GetLogs(), true)
