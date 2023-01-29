@@ -8,13 +8,23 @@ COPY internal ./internal
 
 RUN make install
 
-FROM turbot/steampipe:0.16.1
+FROM alpine/git:2.36.3 as mods
+
+WORKDIR /mods
+RUN git clone https://github.com/turbot/steampipe-mod-aws-compliance --branch v0.55
+RUN git clone https://github.com/turbot/steampipe-mod-aws-insights --branch v0.10
+RUN git clone https://github.com/turbot/steampipe-mod-aws-perimeter --branch v0.2
+RUN git clone https://github.com/turbot/steampipe-mod-aws-tags --branch v0.7
+RUN git clone https://github.com/turbot/steampipe-mod-aws-thrifty --branch v0.18
+
+FROM turbot/steampipe:0.18.2
 
 # Install the aws and steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0
-RUN steampipe plugin install aws@0.76.0
+RUN steampipe plugin install aws@0.92.1
 
 COPY --from=builder /bin/generate /home/steampipe/bin/
+COPY --from=mods /mods /home/steampipe
 COPY docker-entrypoint.sh /home/steampipe/bin
 
 USER root:0

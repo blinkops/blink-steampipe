@@ -8,7 +8,7 @@ COPY internal ./internal
 
 RUN make install
 
-FROM turbot/steampipe:0.16.1
+FROM turbot/steampipe:0.18.2
 
 # Install steampipe and all steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0
