@@ -1,5 +1,5 @@
 connection "csv" {
-  plugin = "csv@0.4.1"
+  plugin = "csv@0.5.0"
 
   # Paths is a list of locations to search for CSV files
   # All paths are resolved relative to the current working directory (CWD)
