@@ -8,13 +8,20 @@ COPY internal ./internal
 
 RUN make install
 
-FROM turbot/steampipe:0.16.1
+FROM alpine/git:2.36.3 as mods
+
+WORKDIR /mods
+RUN git clone https://github.com/turbot/steampipe-mod-github-compliance --branch v0.3
+RUN git clone https://github.com/turbot/steampipe-mod-github-sherlock --branch v0.9
+
+FROM turbot/steampipe:0.18.2
 
 # Install the github and steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0
-RUN steampipe plugin install github@0.19.0
+RUN steampipe plugin install github@0.25.0
 
 COPY --from=builder /bin/generate /home/steampipe/bin/
+COPY --from=mods /mods /home/steampipe
 COPY docker-entrypoint.sh /home/steampipe/bin
 
 USER root:0

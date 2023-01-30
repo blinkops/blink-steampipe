@@ -8,13 +8,21 @@ COPY internal ./internal
 
 RUN make install
 
-FROM turbot/steampipe:0.16.1
+FROM alpine/git:2.36.3 as mods
+
+WORKDIR /mods
+RUN git clone https://github.com/turbot/steampipe-mod-azure-compliance --branch v0.20
+RUN git clone https://github.com/turbot/steampipe-mod-azure-tags --branch v0.5
+RUN git clone https://github.com/turbot/steampipe-mod-azure-thrifty --branch v0.8
+
+FROM turbot/steampipe:0.18.2
 
 # Install the azure and steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0
-RUN steampipe plugin install azure@0.31.0
+RUN steampipe plugin install azure@0.35.1
 
 COPY --from=builder /bin/generate /home/steampipe/bin/
+COPY --from=mods /mods /home/steampipe
 COPY docker-entrypoint.sh /home/steampipe/bin
 
 USER root:0
