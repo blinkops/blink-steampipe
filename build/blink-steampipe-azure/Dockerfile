@@ -19,7 +19,7 @@ FROM turbot/steampipe:0.18.2
 
 # Install the azure and steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0
-RUN steampipe plugin install azure@0.35.1
+RUN steampipe plugin install azure@0.35.1 azuread@0.8.3
 
 COPY --from=builder /bin/generate /home/steampipe/bin/
 COPY --from=mods /mods /home/steampipe
