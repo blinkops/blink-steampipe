@@ -8,11 +8,11 @@ COPY internal ./internal
 
 RUN make install
 
-FROM turbot/steampipe:0.16.1
+FROM turbot/steampipe:0.18.2
 
 # Install the terraform and steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0
-RUN steampipe plugin install terraform@0.2.0
+RUN steampipe plugin install terraform@0.3.0
 
 COPY --from=builder /bin/generate /home/steampipe/bin/
 COPY docker-entrypoint.sh /home/steampipe/bin
