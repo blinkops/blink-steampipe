@@ -6,7 +6,7 @@ import blink.jenkins.ci.*
 node ("ci") {
   def pipeline = new PluginPipeline(this)
   pipeline.projectName = "blink-steampipe"
-  pipeline.mainBranchName = "main"
+  pipeline.mainBranchName = "master"
   pipeline.pushPublicImageOnMain = ["blink-steampipe", "blink-steampipe-aws", "blink-steampipe-azure", "blink-steampipe-csv", "blink-steampipe-gcp",  "blink-steampipe-github", "blink-steampipe-k8s",  "blink-steampipe-terraform",  "blink-steampipe-oci"]
   pipeline.dockerRegistry = Constants.PUBLIC_DOCKER_REGISTRY
   pipeline.isMultiImage = true
