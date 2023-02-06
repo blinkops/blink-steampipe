@@ -3,9 +3,10 @@ package response_wrapper
 import (
 	"encoding/json"
 	"fmt"
-	uuid "github.com/satori/go.uuid"
 	"regexp"
 	"strings"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 const (
@@ -29,6 +30,7 @@ func HandleResponse(output, log string, exitWithError bool) {
 		Log: log,
 	}
 
+	output = strings.TrimSpace(output)
 	result, isError := formatErrorMessage(output)
 	if result == "" {
 		result = generalErrorMessage
@@ -55,7 +57,7 @@ func formatErrorMessage(result string) (msg string, isError bool) {
 		// so we have to parse the error message to determine if it is an error anyway
 		isError = true
 	}
-	if strings.Contains(result, queryErrorMessage) {
+	if strings.HasPrefix(result, queryErrorMessage) {
 		result = strings.TrimSpace(strings.ReplaceAll(result, queryErrorMessage, ""))
 		isError = true
 	}
