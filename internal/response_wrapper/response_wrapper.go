@@ -3,6 +3,7 @@ package response_wrapper
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 
@@ -25,13 +26,29 @@ type ResponseWrapper struct {
 	IsError bool   `json:"is_error"`
 }
 
+func DebugModeEnabled() bool {
+	debugEnv := os.Getenv("BLINK_STEAMPIPE_DEBUG")
+	if strings.ToLower(debugEnv) == "true" {
+		return true
+	}
+
+	return false
+}
+
 func HandleResponse(output, log string, exitWithError bool) {
 	resp := ResponseWrapper{
 		Log: log,
 	}
 
-	output = strings.TrimSpace(output)
-	result, isError := formatErrorMessage(output)
+	result := strings.TrimSpace(output)
+	isError := false
+
+	if !DebugModeEnabled() {
+		// only show friendly errors in operational mode
+		// so dev/cs can investigate issues if needed
+		result, isError = formatErrorMessage(result)
+	}
+
 	if result == "" {
 		result = generalErrorMessage
 	}
