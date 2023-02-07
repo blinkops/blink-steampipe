@@ -3,9 +3,11 @@ package response_wrapper
 import (
 	"encoding/json"
 	"fmt"
-	uuid "github.com/satori/go.uuid"
+	"os"
 	"regexp"
 	"strings"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 const (
@@ -24,12 +26,29 @@ type ResponseWrapper struct {
 	IsError bool   `json:"is_error"`
 }
 
+func DebugModeEnabled() bool {
+	debugEnv := os.Getenv("BLINK_STEAMPIPE_DEBUG")
+	if strings.ToLower(debugEnv) == `"true"` {
+		return true
+	}
+
+	return false
+}
+
 func HandleResponse(output, log string, exitWithError bool) {
 	resp := ResponseWrapper{
 		Log: log,
 	}
 
-	result, isError := formatErrorMessage(output)
+	result := strings.TrimSpace(output)
+	isError := false
+
+	if !DebugModeEnabled() {
+		// only show friendly errors in operational mode
+		// so dev/cs can investigate issues if needed
+		result, isError = formatErrorMessage(result)
+	}
+
 	if result == "" {
 		result = generalErrorMessage
 	}
@@ -55,7 +74,7 @@ func formatErrorMessage(result string) (msg string, isError bool) {
 		// so we have to parse the error message to determine if it is an error anyway
 		isError = true
 	}
-	if strings.Contains(result, queryErrorMessage) {
+	if strings.HasPrefix(result, queryErrorMessage) {
 		result = strings.TrimSpace(strings.ReplaceAll(result, queryErrorMessage, ""))
 		isError = true
 	}
