@@ -25,7 +25,7 @@ const (
 	awsRoleArn                  = "ROLE_ARN"
 	awsExternalID               = "EXTERNAL_ID"
 	awsWebIdentityTokenFile     = "AWS_WEB_IDENTITY_TOKEN_FILE"
-	awsDefaultSessionRegion     = "eu-west-1"
+	awsDefaultSessionRegion     = "us-east-1"
 	awsRegionEnvVariable        = "AWS_REGION"
 	awsDefaultRegionEnvVariable = "AWS_DEFAULT_REGION"
 
@@ -77,9 +77,8 @@ func (gen AWSCredentialGenerator) generate() error {
 	case awsUserBased: // Implemented automatically via aws cli
 		access, secret, sessionToken = awsCredentials[awsAccessKeyId], awsCredentials[awsSecretAccessKey], ""
 	case awsRoleBased:
-		sessionRegion := gen.getSessionRegion()
 		var err error
-		access, secret, sessionToken, err = gen.assumeRole(subBase, sessionRegion, awsCredentials)
+		access, secret, sessionToken, err = gen.assumeRole(subBase, awsCredentials)
 		if err != nil {
 			return fmt.Errorf("unable to assume role with error: %w", err)
 		}
@@ -119,9 +118,9 @@ func (gen AWSCredentialGenerator) detect(awsCredentials map[string]string) (base
 	return awsRoleBased, assumeIdentity
 }
 
-func (gen AWSCredentialGenerator) getSession(region string, awsCredentials map[string]string) (*session.Session, error) {
+func (gen AWSCredentialGenerator) getSession(awsCredentials map[string]string) (*session.Session, error) {
 	sessConfig := aws.Config{
-		Region: aws.String(region),
+		Region: aws.String(awsDefaultSessionRegion),
 	}
 	if awsCredentials != nil {
 		sessConfig.Credentials = credentials.NewStaticCredentials(awsCredentials[awsAccessKeyId], awsCredentials[awsSecretAccessKey], awsCredentials[awsSessionToken])
@@ -130,35 +129,35 @@ func (gen AWSCredentialGenerator) getSession(region string, awsCredentials map[s
 	return session.NewSession(&sessConfig)
 }
 
-func (gen AWSCredentialGenerator) assumeRole(subBase, region string, awsCredentials map[string]string) (access, secret, sessionToken string, err error) {
+func (gen AWSCredentialGenerator) assumeRole(subBase string, awsCredentials map[string]string) (access, secret, sessionToken string, err error) {
 	sessionName := strconv.Itoa(rand.Int())
 
 	switch subBase {
 	case assumeIdentity:
-		return gen.assumeRoleWithIdentity(sessionName, region, awsCredentials)
+		return gen.assumeRoleWithIdentity(sessionName, awsCredentials)
 	case assumeCrossAccount:
-		return gen.assumeRoleCrossAccounts(sessionName, region, awsCredentials)
+		return gen.assumeRoleCrossAccounts(sessionName, awsCredentials)
 	}
 	return "", "", "", errors.New("invalid assume role type was provided")
 }
 
 // assumeRoleWithIdentity first tries to assume a trusted identity using the role and external id, and if it doesn't
 // succeed, it falls back to assuming a web identity using only the role
-func (gen AWSCredentialGenerator) assumeRoleWithIdentity(sessionName, region string, awsCredentials map[string]string) (string, string, string, error) {
+func (gen AWSCredentialGenerator) assumeRoleWithIdentity(sessionName string, awsCredentials map[string]string) (string, string, string, error) {
 	log.Debugf("assuming role with identity. Trying to assume role with trusted identity first and falling back to web identity")
-	accessKey, secretAccessKey, sessionToken, err := gen.assumeRoleWithTrustedIdentity(sessionName, region, awsCredentials)
+	accessKey, secretAccessKey, sessionToken, err := gen.assumeRoleWithTrustedIdentity(sessionName, awsCredentials)
 	if err != nil {
 		log.Errorf("error assuming role with trusted identity: %v", err)
-		return gen.assumeRoleWithWebIdentity(sessionName, region, awsCredentials)
+		return gen.assumeRoleWithWebIdentity(sessionName, awsCredentials)
 	}
 
 	return accessKey, secretAccessKey, sessionToken, nil
 }
 
-func (gen AWSCredentialGenerator) assumeRoleWithWebIdentity(sessionName, region string, awsCredentials map[string]string) (string, string, string, error) {
+func (gen AWSCredentialGenerator) assumeRoleWithWebIdentity(sessionName string, awsCredentials map[string]string) (string, string, string, error) {
 	log.Debug("assuming role with web identity")
 
-	sess, err := gen.getSession(region, awsCredentials)
+	sess, err := gen.getSession(awsCredentials)
 	if err != nil {
 		return "", "", "", errors.Wrap(err, "initializing aws session")
 	}
@@ -196,48 +195,47 @@ func (gen AWSCredentialGenerator) assumeRoleWithWebIdentity(sessionName, region 
 	return *result.Credentials.AccessKeyId, *result.Credentials.SecretAccessKey, *result.Credentials.SessionToken, err
 }
 
-func (gen AWSCredentialGenerator) assumeRoleWithTrustedIdentity(sessionName, region string, awsCredentials map[string]string) (string, string, string, error) {
+func (gen AWSCredentialGenerator) assumeRoleWithTrustedIdentity(sessionName string, awsCredentials map[string]string) (string, string, string, error) {
 	log.Debug("assuming role with trusted entity")
 
 	trustedIdentityCreds := gen.getTrustedIdentityCreds(awsCredentials)
 
-	sess, err := gen.getSession(region, trustedIdentityCreds)
+	sess, err := gen.getSession(trustedIdentityCreds)
 	if err != nil {
 		return "", "", "", errors.Wrap(err, "initializing aws session")
 	}
 
 	svc := sts.New(sess)
-	input := &sts.AssumeRoleInput{
+
+	assumeInput := &sts.AssumeRoleInput{
 		RoleArn:         aws.String(awsCredentials[awsRoleArn]),
 		RoleSessionName: &sessionName,
 		ExternalId:      aws.String(awsCredentials[awsExternalID]),
 	}
-	result, err := svc.AssumeRole(input)
+
+	if result, err := svc.AssumeRole(assumeInput); err == nil {
+		return *result.Credentials.AccessKeyId, *result.Credentials.SecretAccessKey, *result.Credentials.SessionToken, err
+	}
+
+	log.Errorf("error assuming role with trusted identity: %v", err)
+	log.Debug("try assuming role without Blink trusted entity")
+
+	sess, err = gen.getSession(nil)
 	if err != nil {
-		log.Errorf("error assuming role with trusted identity: %v", err)
-		log.Debug("try assuming role without Blink trusted entity")
+		return "", "", "", errors.Wrap(err, "initializing aws session")
+	}
 
-		sess, err = gen.getSession(region, nil)
-		if err != nil {
-			return "", "", "", errors.Wrap(err, "initializing aws session")
-		}
-
-		svc = sts.New(sess)
-		result, err = svc.AssumeRole(&sts.AssumeRoleInput{
-			RoleArn:         aws.String(awsCredentials[awsRoleArn]),
-			RoleSessionName: &sessionName,
-			ExternalId:      aws.String(awsCredentials[awsExternalID]),
-		})
-		if err != nil {
-			return "", "", "", err
-		}
+	svc = sts.New(sess)
+	result, err := svc.AssumeRole(assumeInput)
+	if err != nil {
+		return "", "", "", err
 	}
 
 	return *result.Credentials.AccessKeyId, *result.Credentials.SecretAccessKey, *result.Credentials.SessionToken, nil
 }
 
-func (gen AWSCredentialGenerator) assumeRoleCrossAccounts(sessionName, region string, awsCredentials map[string]string) (string, string, string, error) {
-	sess, err := gen.getSession(region, awsCredentials)
+func (gen AWSCredentialGenerator) assumeRoleCrossAccounts(sessionName string, awsCredentials map[string]string) (string, string, string, error) {
+	sess, err := gen.getSession(awsCredentials)
 	if err != nil {
 		return "", "", "", errors.Wrap(err, "initializing aws session")
 	}
