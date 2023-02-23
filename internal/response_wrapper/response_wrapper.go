@@ -20,8 +20,7 @@ const (
 )
 
 const (
-	generalErrorMessage     = "failed to initialize plugin"
-	emptyOutputErrorMessage = "empty output"
+	generalErrorMessage = "failed to initialize plugin"
 )
 
 const responseWrapperFormat = `{"output":"%s", "log": "%s", "is_error": "%v"}`

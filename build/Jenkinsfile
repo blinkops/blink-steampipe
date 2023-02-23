@@ -11,6 +11,5 @@ node ("ci") {
   pipeline.dockerRegistry = Constants.PUBLIC_DOCKER_REGISTRY
   pipeline.isMultiImage = true
   pipeline.runUnitTests = false
-  pipeline.runPluginManager = false
   pipeline.run()
 }
