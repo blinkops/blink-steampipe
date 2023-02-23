@@ -78,12 +78,17 @@ func handleReportFileResponseIfRequired(resp *ResponseWrapper, action string) {
 		return
 	}
 
-	reportFile := os.Getenv(consts.ReportFileEnvVar)
+	reportFileParentDir := os.Getenv(consts.ReportFileParentDirEnvVar)
+	if reportFileParentDir == "" {
+		return
+	}
+
+	reportFile := os.Getenv(consts.ReportFilePathEnvVar)
 	if reportFile == "" {
 		return
 	}
 
-	reportFilePath := filepath.Join(consts.FilesMountPath, reportFile)
+	reportFilePath := filepath.Join(reportFileParentDir, reportFile)
 	if err := ioutil.WriteFile(reportFilePath, []byte(resp.Output), 0644); err != nil {
 		resp.IsError = true
 		resp.Log = fmt.Sprintf("%s\nfailed to handle report file response if required: %v\n", resp.Log, err.Error())
