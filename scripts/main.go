@@ -7,20 +7,21 @@ import (
 
 	"github.com/blinkops/blink-steampipe/internal/logger"
 	"github.com/blinkops/blink-steampipe/internal/response_wrapper"
+	"github.com/blinkops/blink-steampipe/scripts/consts"
 	"github.com/blinkops/blink-steampipe/scripts/generators"
 	log "github.com/sirupsen/logrus"
 )
 
 func main() {
 	if err := logger.SetUpLogger(); err != nil {
-		response_wrapper.HandleResponse("", fmt.Sprintf("set up logger: %v", err.Error()), true)
+		response_wrapper.HandleResponse("", fmt.Sprintf("set up logger: %v", err.Error()), "", true)
 		os.Exit(0)
 	}
 
 	for _, credentialGenerator := range generators.Generators {
 		if err := credentialGenerator.Generate(); err != nil {
 			log.Errorf("failed generate credentials: %v", err)
-			response_wrapper.HandleResponse("", logger.GetLogs(), true)
+			response_wrapper.HandleResponse("", logger.GetLogs(), "", true)
 			os.Exit(0)
 		}
 	}
@@ -33,7 +34,7 @@ func main() {
 
 	if cmdName == "" {
 		log.Error("no command provided")
-		response_wrapper.HandleResponse("", logger.GetLogs(), true)
+		response_wrapper.HandleResponse("", logger.GetLogs(), action, true)
 		os.Exit(0)
 	}
 	cmdArgs := os.Args[2:]
@@ -43,12 +44,12 @@ func main() {
 
 	// some steampipe benchmark ("check") may return an error code but return a result.
 	// in such a case, we don't want the entire report to fail and display the result.
-	if err != nil && (action != "check" || len(output) == 0) {
+	if err != nil && (action != consts.CommandCheck || len(output) == 0) {
 		log.Errorf("execute command: %v", err)
-		response_wrapper.HandleResponse(string(output), logger.GetLogs(), true)
+		response_wrapper.HandleResponse(string(output), logger.GetLogs(), action, true)
 		os.Exit(0)
 	}
 
-	response_wrapper.HandleResponse(string(output), logger.GetLogs(), false)
+	response_wrapper.HandleResponse(string(output), logger.GetLogs(), action, false)
 	os.Exit(0)
 }

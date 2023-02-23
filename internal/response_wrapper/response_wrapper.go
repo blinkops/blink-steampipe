@@ -3,10 +3,13 @@ package response_wrapper
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
+	"github.com/blinkops/blink-steampipe/scripts/consts"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -16,7 +19,9 @@ const (
 	rpcErrorCode        = "rpc error: code ="
 )
 
-const generalErrorMessage = "failed to initialize plugin"
+const (
+	generalErrorMessage = "failed to initialize plugin"
+)
 
 const responseWrapperFormat = `{"output":"%s", "log": "%s", "is_error": "%v"}`
 
@@ -35,8 +40,8 @@ func DebugModeEnabled() bool {
 	return false
 }
 
-func HandleResponse(output, log string, exitWithError bool) {
-	resp := ResponseWrapper{
+func HandleResponse(output, log, action string, exitWithError bool) {
+	resp := &ResponseWrapper{
 		Log: log,
 	}
 
@@ -51,10 +56,12 @@ func HandleResponse(output, log string, exitWithError bool) {
 
 	if result == "" {
 		result = generalErrorMessage
+		isError = true
 	}
 
 	resp.Output = result
 	resp.IsError = isError || exitWithError
+	handleReportFileResponseIfRequired(resp, action)
 
 	marshaledResponse, err := json.Marshal(resp)
 	if err != nil {
@@ -64,6 +71,35 @@ func HandleResponse(output, log string, exitWithError bool) {
 	}
 
 	fmt.Println(string(marshaledResponse))
+}
+
+func handleReportFileResponseIfRequired(resp *ResponseWrapper, action string) {
+	if action != consts.CommandCheck {
+		return
+	}
+
+	reportFileParentDir := os.Getenv(consts.ReportFileParentDirEnvVar)
+	if reportFileParentDir == "" {
+		return
+	}
+
+	reportFile := os.Getenv(consts.ReportFilePathEnvVar)
+	if reportFile == "" {
+		return
+	}
+
+	reportFilePath := filepath.Join(reportFileParentDir, reportFile)
+	if err := ioutil.WriteFile(reportFilePath, []byte(resp.Output), 0644); err != nil {
+		resp.IsError = true
+		resp.Log = fmt.Sprintf("%s\nfailed to handle report file response if required: %v\n", resp.Log, err.Error())
+		return
+	}
+
+	overrideFormat := consts.FileOutputOverrideFormat
+	if resp.IsError {
+		overrideFormat = consts.FileOutputOverrideOnErrorFormat
+	}
+	resp.Output = fmt.Sprintf(overrideFormat, reportFile)
 }
 
 // formatErrorMessage format the error message to be cleaner
