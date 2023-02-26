@@ -91,7 +91,7 @@ func handleReportFileResponseIfRequired(resp *ResponseWrapper, action string) {
 	reportFilePath := filepath.Join(reportFileParentDir, reportFile)
 	if err := ioutil.WriteFile(reportFilePath, []byte(resp.Output), 0644); err != nil {
 		resp.IsError = true
-		resp.Log = fmt.Sprintf("%s\nfailed to handle report file response if required: %v\n", resp.Log, err.Error())
+		resp.Output = fmt.Sprintf("failed to write report file: %v\n", err.Error())
 		return
 	}
 
