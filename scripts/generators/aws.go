@@ -301,9 +301,12 @@ func replaceSpcConfigs(access, secret, sessionToken string) error {
 	regions := make([]string, len(separatedRegions))
 
 	for i, region := range regions {
-		regions[i] = fmt.Sprintf(`"%s"`, region)
+		if i < len(regions)-1 {
+			regions[i] = fmt.Sprintf(`"%s",`, region)
+		} else {
+			regions[i] = fmt.Sprintf(`"%s"`, region)
+		}
 	}
-
 	dataAsString = strings.ReplaceAll(dataAsString, "{{REGIONS}}", fmt.Sprintf(`regions = %s`, regions))
 
 	if err = os.WriteFile(steampipeAwsConfigurationFile, []byte(dataAsString), 0o600); err != nil {
