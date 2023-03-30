@@ -300,14 +300,14 @@ func replaceSpcConfigs(access, secret, sessionToken string) error {
 	separatedRegions := strings.Split(regionsEnvValue, ",")
 	regions := make([]string, len(separatedRegions))
 
-	for i, region := range regions {
+	for i, region := range separatedRegions {
 		if i < len(regions)-1 {
 			regions[i] = fmt.Sprintf(`"%s",`, region)
 		} else {
 			regions[i] = fmt.Sprintf(`"%s"`, region)
 		}
 	}
-	dataAsString = strings.ReplaceAll(dataAsString, "{{REGIONS}}", fmt.Sprintf(`regions = [%s]`, regions))
+	dataAsString = strings.ReplaceAll(dataAsString, "{{REGIONS}}", fmt.Sprintf(`regions = %s`, regions))
 
 	if err = os.WriteFile(steampipeAwsConfigurationFile, []byte(dataAsString), 0o600); err != nil {
 		return fmt.Errorf("unable to prepare aws config file: %w", err)
