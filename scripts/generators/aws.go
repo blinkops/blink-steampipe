@@ -273,24 +273,18 @@ func (gen AWSCredentialGenerator) getTrustedIdentityCreds(credentials map[string
 	}
 }
 
-func handleRegionEnvVariable(dataAsString string) string {
-	regionsEnvValue := strings.TrimSpace(os.Getenv(awsRegionsListParam))
+func getRegionsReplace() string {
+	regionsEnvValue := os.Getenv(awsRegionsListParam)
 	if regionsEnvValue == "" {
-		regionsEnvValue = "*"
+		return "*"
 	}
 
-	separatedRegions := strings.Split(regionsEnvValue, ",")
-	regions := make([]string, len(separatedRegions))
-
-	for i, region := range separatedRegions {
-		if i < len(regions)-1 {
-			regions[i] = fmt.Sprintf(`"%s",`, region)
-		} else {
-			regions[i] = fmt.Sprintf(`"%s"`, region)
-		}
+	var regionsReplace string
+	for _, region := range strings.Split(regionsEnvValue, ",") {
+		regionsReplace += fmt.Sprintf(`"%s",`, strings.TrimSpace(region))
 	}
 
-	return strings.ReplaceAll(dataAsString, "{{REGIONS}}", fmt.Sprintf(`regions = %s`, regions))
+	return strings.TrimSuffix(regionsReplace, ",")
 }
 
 func replaceSpcConfigs(access, secret, sessionToken string) error {
@@ -316,7 +310,7 @@ func replaceSpcConfigs(access, secret, sessionToken string) error {
 	}
 	dataAsString = strings.ReplaceAll(dataAsString, "{{SESSION_TOKEN}}", sessionReplace)
 
-	dataAsString = handleRegionEnvVariable(dataAsString)
+	dataAsString = getRegionsReplace()
 
 	if err = os.WriteFile(steampipeAwsConfigurationFile, []byte(dataAsString), 0o600); err != nil {
 		return fmt.Errorf("unable to prepare aws config file: %w", err)
