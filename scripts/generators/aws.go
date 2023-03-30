@@ -273,18 +273,20 @@ func (gen AWSCredentialGenerator) getTrustedIdentityCreds(credentials map[string
 	}
 }
 
-func getRegionsReplace() string {
+func getRegionsReplace(dataAsString string) string {
 	regionsEnvValue := os.Getenv(awsRegionsListParam)
 	if regionsEnvValue == "" {
 		return "*"
 	}
 
-	var regionsReplace string
-	for _, region := range strings.Split(regionsEnvValue, ",") {
-		regionsReplace += fmt.Sprintf(`"%s",`, strings.TrimSpace(region))
+	separatedRegions := strings.Split(regionsEnvValue, ",")
+	regions := make([]string, len(separatedRegions))
+	for i, region := range separatedRegions {
+		regions[i] += fmt.Sprintf(`"%s",`, strings.TrimSpace(region))
+		regions[i] = strings.TrimSuffix(regions[i], ",")
 	}
 
-	return strings.TrimSuffix(regionsReplace, ",")
+	return strings.ReplaceAll(dataAsString, "{{REGIONS}}", fmt.Sprintf(`regions = %s`, regions))
 }
 
 func replaceSpcConfigs(access, secret, sessionToken string) error {
@@ -310,7 +312,7 @@ func replaceSpcConfigs(access, secret, sessionToken string) error {
 	}
 	dataAsString = strings.ReplaceAll(dataAsString, "{{SESSION_TOKEN}}", sessionReplace)
 
-	dataAsString = getRegionsReplace()
+	dataAsString = getRegionsReplace(dataAsString)
 
 	if err = os.WriteFile(steampipeAwsConfigurationFile, []byte(dataAsString), 0o600); err != nil {
 		return fmt.Errorf("unable to prepare aws config file: %w", err)
