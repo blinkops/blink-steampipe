@@ -28,6 +28,7 @@ const (
 	awsDefaultSessionRegion     = "us-east-1"
 	awsRegionEnvVariable        = "AWS_REGION"
 	awsDefaultRegionEnvVariable = "AWS_DEFAULT_REGION"
+	awsRegionsListParam         = "AWS_REGIONS_PARAM"
 
 	steampipeAwsConfigurationFile = consts.SteampipeSpcConfigurationPath + "aws.spc"
 )
@@ -294,6 +295,16 @@ func replaceSpcConfigs(access, secret, sessionToken string) error {
 		sessionReplace = fmt.Sprintf(`session_token = "%s"`, sessionToken)
 	}
 	dataAsString = strings.ReplaceAll(dataAsString, "{{SESSION_TOKEN}}", sessionReplace)
+
+	regionsEnvValue := os.Getenv(awsRegionsListParam)
+	separatedRegions := strings.Split(regionsEnvValue, ",")
+	regions := make([]string, len(separatedRegions))
+
+	for i, region := range regions {
+		regions[i] = fmt.Sprintf(`"%s"`, region)
+	}
+
+	dataAsString = strings.ReplaceAll(dataAsString, "{{REGIONS}}", fmt.Sprintf(`regions = %s`, regions))
 
 	if err = os.WriteFile(steampipeAwsConfigurationFile, []byte(dataAsString), 0o600); err != nil {
 		return fmt.Errorf("unable to prepare aws config file: %w", err)
