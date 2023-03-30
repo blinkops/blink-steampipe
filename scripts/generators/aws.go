@@ -297,6 +297,10 @@ func replaceSpcConfigs(access, secret, sessionToken string) error {
 	dataAsString = strings.ReplaceAll(dataAsString, "{{SESSION_TOKEN}}", sessionReplace)
 
 	regionsEnvValue := os.Getenv(awsRegionsListParam)
+	if regionsEnvValue == "" {
+		regionsEnvValue = "*"
+	}
+
 	separatedRegions := strings.Split(regionsEnvValue, ",")
 	regions := make([]string, len(separatedRegions))
 
