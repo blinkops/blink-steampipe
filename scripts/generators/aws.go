@@ -307,7 +307,7 @@ func replaceSpcConfigs(access, secret, sessionToken string) error {
 			regions[i] = fmt.Sprintf(`"%s"`, region)
 		}
 	}
-	dataAsString = strings.ReplaceAll(dataAsString, "{{REGIONS}}", fmt.Sprintf(`regions = %s`, regions))
+	dataAsString = strings.ReplaceAll(dataAsString, "{{REGIONS}}", fmt.Sprintf(`regions = [%s]`, regions))
 
 	if err = os.WriteFile(steampipeAwsConfigurationFile, []byte(dataAsString), 0o600); err != nil {
 		return fmt.Errorf("unable to prepare aws config file: %w", err)
