@@ -276,7 +276,7 @@ func (gen AWSCredentialGenerator) getTrustedIdentityCreds(credentials map[string
 func setRegionParam(dataAsString string) string {
 	regionsEnvValue := os.Getenv(awsRegionsListParam)
 	if regionsEnvValue == "" {
-		regionsEnvValue = `"*"`
+		regionsEnvValue = "*"
 	}
 
 	regionsSeparated := strings.Split(regionsEnvValue, ",")
