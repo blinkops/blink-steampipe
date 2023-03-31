@@ -275,13 +275,14 @@ func (gen AWSCredentialGenerator) getTrustedIdentityCreds(credentials map[string
 
 func getRegionsReplace() string {
 	regionsEnvValue := os.Getenv(awsRegionsListParam)
+	regionsEnvValue = strings.TrimSpace(regionsEnvValue)
 	if regionsEnvValue == "" {
 		return "*"
 	}
 
 	var regionsReplace string
 	for _, region := range strings.Split(regionsEnvValue, ",") {
-		regionsReplace += fmt.Sprintf(`"%s",`, strings.TrimSpace(region))
+		regionsReplace += fmt.Sprintf(`"%s",`, region)
 	}
 
 	return strings.TrimSuffix(regionsReplace, ",")
