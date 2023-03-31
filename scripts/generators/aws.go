@@ -273,31 +273,25 @@ func (gen AWSCredentialGenerator) getTrustedIdentityCreds(credentials map[string
 	}
 }
 
-func getRegionsReplace() string {
-	regionsEnvValue := os.Getenv(awsRegionsListParam)
-	regionsEnvValue = strings.ReplaceAll(regionsEnvValue, ", ", ",")
-	if regionsEnvValue == "" {
-		return "*"
-	}
-
-	var regionsReplace string
-	for _, region := range strings.Split(regionsEnvValue, ",") {
-		regionsReplace += fmt.Sprintf(`"%s",`, region)
-	}
-
-	return strings.TrimSuffix(regionsReplace, ",")
-}
-
 func setRegionParam(dataAsString string) string {
-	regionsStr := getRegionsReplace()
-	separatedRegions := strings.Split(regionsStr, ",")
-	regions := make([]string, len(separatedRegions))
-
-	for i, region := range separatedRegions {
-		regions[i] = region
+	regionsEnvValue := os.Getenv(awsRegionsListParam)
+	if regionsEnvValue == "" {
+		regionsEnvValue = `"*"`
 	}
 
-	return strings.ReplaceAll(dataAsString, "{{REGIONS}}", fmt.Sprintf(`regions = %s`, regions))
+	regionsSeparated := strings.Split(regionsEnvValue, ",")
+	regions := make([]string, len(regionsSeparated))
+	for i, region := range regionsSeparated {
+		region = strings.TrimSpace(region)
+
+		if i < len(regions)-1 {
+			regions[i] = fmt.Sprintf(`"%s",`, region)
+		} else {
+			regions[i] = fmt.Sprintf(`"%s"`, region)
+		}
+	}
+
+	return strings.ReplaceAll(dataAsString, "{{REGIONS}}", fmt.Sprintf("regions = %s", regions))
 }
 
 func replaceSpcConfigs(access, secret, sessionToken string) error {
