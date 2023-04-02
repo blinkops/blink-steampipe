@@ -274,25 +274,22 @@ func (gen AWSCredentialGenerator) getTrustedIdentityCreds(credentials map[string
 }
 
 func setRegionParam(dataAsString string) string {
-	regionsEnvValue := os.Getenv(awsRegionsListParam)
-	if regionsEnvValue == "" {
-		regionsEnvValue = "*"
-	}
+    regionsEnvValue := os.Getenv(awsRegionsListParam)
+    if regionsEnvValue == "" {
+        regionsEnvValue = "*"
+    }
 
-	regionsSeparated := strings.Split(regionsEnvValue, ",")
-	regions := make([]string, len(regionsSeparated))
-	for i, region := range regionsSeparated {
-		region = strings.TrimSpace(region)
+    regionsSeparated := strings.Split(regionsEnvValue, ",")
+    regions := make([]string, len(regionsSeparated))
 
-		if i < len(regions)-1 {
-			regions[i] = fmt.Sprintf(`"%s",`, region)
-		} else {
-			regions[i] = fmt.Sprintf(`"%s"`, region)
-		}
-	}
+    for i, region := range regionsSeparated {
+        regions[i] = fmt.Sprintf(`"%s"`, strings.TrimSpace(region))
+    }
 
-	return strings.ReplaceAll(dataAsString, "{{REGIONS}}", fmt.Sprintf("regions = %s", regions))
+    regionsString := strings.Join(regions, ",")
+    return strings.ReplaceAll(dataAsString, "{{REGIONS}}", fmt.Sprintf("regions = [%s]", regionsString))
 }
+
 
 func replaceSpcConfigs(access, secret, sessionToken string) error {
 	data, err := os.ReadFile(steampipeAwsConfigurationFile)
