@@ -3,3 +3,5 @@ connection "gcp" {
   project = "{{PROJECT}}"
   credentials = "~/.config/gcloud/application_default_credentials.json"
 }
+
+
