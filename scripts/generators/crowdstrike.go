@@ -18,6 +18,7 @@ var addressToDomainMap = map[string]string{
 
 type CrowdstrikeCredentialGenerator struct{}
 
+// the plugin works with env vars, we just need to edit the api_address to be a region
 func (gen CrowdstrikeCredentialGenerator) Generate() error {
 	apiAddress, ok := os.LookupEnv(crowdstrikeDomain)
 	if !ok {
