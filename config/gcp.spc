@@ -4,4 +4,3 @@ connection "gcp" {
   credentials = "~/.config/gcloud/application_default_credentials.json"
 }
 
-
