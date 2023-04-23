@@ -7,7 +7,6 @@ var Generators = []CredentialGenerator{
 	StorageCredentialsGenerator{},
 	FreePortGenerator{},
 	OCICredentialGenerator{},
-	CrowdstrikeCredentialGenerator{},
 }
 
 type CredentialGenerator interface {
