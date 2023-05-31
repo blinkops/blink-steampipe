@@ -69,7 +69,7 @@ func main() {
 
 func cloneMod(repo string) error {
 	modName := extractModName(repo)
-	cmd := exec.Command("git", "clone", repo, filepath.Join(consts.SteampipeBasePath, modName), "--quiet")
+	cmd := exec.Command("git", "clone", repo, filepath.Join(consts.SteampipeBasePath, modName))
 	if err := cmd.Run(); err != nil {
 		return errors.Wrap(err, cmd.String())
 	}
