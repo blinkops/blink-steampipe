@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/blinkops/blink-steampipe/internal/logger"
 	"github.com/blinkops/blink-steampipe/internal/response_wrapper"
@@ -67,9 +68,16 @@ func main() {
 }
 
 func cloneMod(repo string) error {
-	cmd := exec.Command("git", "clone", repo, filepath.Join(consts.SteampipeBasePath, consts.SteampipeCustomModAlias), "--quiet")
+	modName := extractModName(repo)
+	cmd := exec.Command("git", "clone", repo, filepath.Join(consts.SteampipeBasePath, modName), "--quiet")
 	if err := cmd.Run(); err != nil {
 		return errors.Wrap(err, cmd.String())
 	}
 	return nil
+}
+
+func extractModName(repo string) string {
+	splitPath := strings.Split(repo, "/")
+	modname := strings.TrimSuffix(splitPath[len(splitPath)-1], ".git")
+	return modname
 }
