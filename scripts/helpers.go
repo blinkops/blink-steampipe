@@ -1,8 +1,8 @@
 package main
 
 import (
+	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 
 	"github.com/blinkops/blink-steampipe/scripts/consts"
@@ -11,7 +11,13 @@ import (
 
 func cloneMod(repo string) error {
 	modName := extractModName(repo)
-	modLocation := filepath.Join(consts.SteampipeBasePath, modName)
+	modLocation := consts.SteampipeBasePath + modName
+	if _, err := os.Stat(modLocation); err == nil {
+		// remove repo if it exists so we can clone it
+		if err = os.RemoveAll(modLocation); err != nil {
+			return errors.Wrap(err, "remove existing mod")
+		}
+	}
 	cmd := exec.Command("git", "clone", repo, modLocation)
 	if err := cmd.Run(); err != nil {
 		return errors.Wrap(err, cmd.String())
