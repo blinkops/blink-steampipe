@@ -73,6 +73,14 @@ func cloneMod(repo string) error {
 	if err := cmd.Run(); err != nil {
 		return errors.Wrap(err, cmd.String())
 	}
+	cmd = exec.Command("cd", filepath.Join(consts.SteampipeBasePath, modName))
+	if err := cmd.Run(); err != nil {
+		return errors.Wrap(err, cmd.String())
+	}
+	cmd = exec.Command("steampipe", "mod", "install")
+	if err := cmd.Run(); err != nil {
+		return errors.Wrap(err, cmd.String())
+	}
 	return nil
 }
 
