@@ -45,7 +45,7 @@ func main() {
 	if modLocation := os.Getenv(consts.SteampipeReportCustomModLocationEnvVar); modLocation != "" {
 		if err := cloneMod(modLocation); err != nil {
 			log.Error(errors.Wrap(err, "load mod"))
-			response_wrapper.HandleResponse("", logger.GetLogs(), action, true)
+			response_wrapper.HandleResponse(err.Error(), logger.GetLogs(), action, true)
 			os.Exit(0)
 		}
 	}
