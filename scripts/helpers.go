@@ -22,11 +22,8 @@ func cloneMod(repo string) error {
 	if err := cmd.Run(); err != nil {
 		return errors.Wrap(err, "git clone mod")
 	}
-	cmd = exec.Command("cd", modLocation)
-	if err := cmd.Run(); err != nil {
-		return errors.Wrap(err, "cd to mod dir")
-	}
 	cmd = exec.Command("steampipe", "mod", "install")
+	cmd.Dir = modLocation
 	if err := cmd.Run(); err != nil {
 		return errors.Wrap(err, "steampipe mod dependencies install")
 	}
