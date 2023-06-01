@@ -13,6 +13,7 @@ FROM alpine/git:2.36.3 as mods
 WORKDIR /mods
 RUN git clone https://github.com/turbot/steampipe-mod-github-compliance --branch v0.3
 RUN git clone https://github.com/turbot/steampipe-mod-github-sherlock --branch v0.9
+RUN apt-get update && apt-get install -y git=1:2.25.1-1ubuntu3.8
 
 FROM turbot/steampipe:0.18.2
 
@@ -29,7 +30,6 @@ COPY config/db.spc /home/steampipe/.steampipe/config/db.spc
 RUN chown -R steampipe /home/steampipe/bin/ /home/steampipe/.steampipe/config
 RUN chmod -R +x /home/steampipe/bin/
 RUN chown steampipe /home/steampipe/bin/docker-entrypoint.sh
-RUN apt-get update && apt-get install -y git=1:2.25.1-1ubuntu3.8
 
 USER steampipe:0
 ENTRYPOINT ["/home/steampipe/bin/docker-entrypoint.sh"]

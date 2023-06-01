@@ -15,6 +15,7 @@ RUN git clone https://github.com/turbot/steampipe-mod-aws-compliance --branch v0
 RUN git clone https://github.com/turbot/steampipe-mod-aws-perimeter --branch v0.2
 RUN git clone https://github.com/turbot/steampipe-mod-aws-tags --branch v0.7
 RUN git clone https://github.com/turbot/steampipe-mod-aws-thrifty --branch v0.18
+RUN apt-get update && apt-get install -y git=1:2.25.1-1ubuntu3.8
 
 FROM turbot/steampipe:0.18.2
 
@@ -32,7 +33,6 @@ COPY config/db.spc /home/steampipe/.steampipe/config/db.spc
 RUN chown -R steampipe /home/steampipe/bin/ /home/steampipe/.steampipe/config
 RUN chmod -R +x /home/steampipe/bin/
 RUN chown steampipe /home/steampipe/bin/docker-entrypoint.sh
-RUN apt-get update && apt-get install -y git=1:2.25.1-1ubuntu3.8
 
 USER steampipe:0
 ENTRYPOINT ["/home/steampipe/bin/docker-entrypoint.sh"]
