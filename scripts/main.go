@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
-	"strings"
 
 	"github.com/blinkops/blink-steampipe/internal/logger"
 	"github.com/blinkops/blink-steampipe/internal/response_wrapper"
@@ -46,7 +44,7 @@ func main() {
 	// we clone the repo to the corresponding location mentioned in queryV2PreInvoke in controller
 	if modLocation := os.Getenv(consts.SteampipeReportCustomModLocationEnvVar); modLocation != "" {
 		if err := cloneMod(modLocation); err != nil {
-			log.Errorf("Failed to load the custom Steampipe mod from %s. Please ensure the provided repository is publicly available.", modLocation)
+			log.Error(errors.Wrap(err, "load mod"))
 			response_wrapper.HandleResponse("", logger.GetLogs(), action, true)
 			os.Exit(0)
 		}
@@ -65,27 +63,4 @@ func main() {
 
 	response_wrapper.HandleResponse(string(output), logger.GetLogs(), action, false)
 	os.Exit(0)
-}
-
-func cloneMod(repo string) error {
-	modName := extractModName(repo)
-	cmd := exec.Command("git", "clone", repo, filepath.Join(consts.SteampipeBasePath, modName))
-	if err := cmd.Run(); err != nil {
-		return errors.Wrap(err, cmd.String())
-	}
-	cmd = exec.Command("cd", filepath.Join(consts.SteampipeBasePath, modName))
-	if err := cmd.Run(); err != nil {
-		return errors.Wrap(err, cmd.String())
-	}
-	cmd = exec.Command("steampipe", "mod", "install")
-	if err := cmd.Run(); err != nil {
-		return errors.Wrap(err, cmd.String())
-	}
-	return nil
-}
-
-func extractModName(repo string) string {
-	splitPath := strings.Split(repo, "/")
-	modname := strings.TrimSuffix(splitPath[len(splitPath)-1], ".git")
-	return modname
 }
