@@ -8,13 +8,16 @@ COPY internal ./internal
 
 RUN make install
 
+#  ubuntu 20.04
+FROM ubuntu:focal-20210416 AS plugin
+RUN apt-get update && apt-get install -y git=1:2.25.1-1ubuntu3.8
+
 FROM alpine/git:2.36.3 as mods
 
 WORKDIR /mods
 RUN git clone https://github.com/turbot/steampipe-mod-azure-compliance --branch v0.20
 RUN git clone https://github.com/turbot/steampipe-mod-azure-tags --branch v0.5
 RUN git clone https://github.com/turbot/steampipe-mod-azure-thrifty --branch v0.8
-RUN apt-get update && apt-get install -y git=1:2.25.1-1ubuntu3.8
 
 FROM turbot/steampipe:0.18.2
 
