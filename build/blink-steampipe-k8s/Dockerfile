@@ -28,7 +28,7 @@ COPY config/db.spc /home/steampipe/.steampipe/config/db.spc
 RUN chown -R steampipe /home/steampipe/bin/ /home/steampipe/.steampipe/config
 RUN chmod -R +x /home/steampipe/bin/
 RUN chown steampipe /home/steampipe/bin/docker-entrypoint.sh
-RUN apt-get -y install git
+RUN apt-get update && apt-get install -y git=1:2.25.1-1ubuntu3.8
 
 USER steampipe:0
 ENTRYPOINT ["/home/steampipe/bin/docker-entrypoint.sh"]
