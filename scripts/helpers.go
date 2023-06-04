@@ -8,10 +8,11 @@ import (
 
 	"github.com/blinkops/blink-steampipe/scripts/consts"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 func cloneMod(repo string) error {
-	fmt.Print("starting to clone")
+	log.Info("starting to clone")
 	modName := extractModName(repo)
 	modLocation := consts.SteampipeBasePath + modName
 	if _, err := os.Stat(modLocation); err == nil {
@@ -25,13 +26,13 @@ func cloneMod(repo string) error {
 	if err := cmd.Run(); err != nil {
 		return errors.Wrap(err, "git clone mod")
 	}
-	fmt.Print("cloned repo")
+	log.Info("cloned repo")
 	cmd = exec.Command("steampipe", "mod", "install")
 	cmd.Dir = modLocation
 	if err := cmd.Run(); err != nil {
 		return errors.Wrap(err, "steampipe mod dependencies install")
 	}
-	fmt.Print("installed mod")
+	log.Info("installed mod")
 	return nil
 }
 
