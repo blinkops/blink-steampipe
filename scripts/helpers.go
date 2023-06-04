@@ -17,7 +17,8 @@ func cloneMod(repo string) error {
 	if err != nil {
 		return errors.Wrap(err, "decode repo string")
 	}
-	modName := extractModName(string(decodedRepo))
+	repoStr := string(decodedRepo)
+	modName := extractModName(repoStr)
 	modLocation := consts.SteampipeBasePath + modName
 	if _, err = os.Stat(modLocation); !os.IsNotExist(err) {
 		log.Info("found existing mod, deleting")
@@ -26,7 +27,7 @@ func cloneMod(repo string) error {
 			return errors.Wrap(err, "remove existing mod")
 		}
 	}
-	cmd := exec.Command("git", "clone", repo, modLocation)
+	cmd := exec.Command("git", "clone", repoStr, modLocation)
 	if err = cmd.Run(); err != nil {
 		return errors.Wrapf(err, "git clone mod %s", repo)
 	}
