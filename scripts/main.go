@@ -42,8 +42,8 @@ func main() {
 
 	// if a mod location was provided,
 	// we clone the repo to the corresponding location mentioned in queryV2PreInvoke in controller
-	if modLocation := os.Getenv(consts.SteampipeReportCustomModLocationEnvVar); modLocation != "" {
-		if err := cloneMod(modLocation); err != nil {
+	if repo := os.Getenv(consts.SteampipeReportCustomModLocationEnvVar); repo != "" {
+		if err := cloneMod(repo); err != nil {
 			log.Error(errors.Wrap(err, "load mod"))
 			response_wrapper.HandleResponse(err.Error(), logger.GetLogs(), action, true)
 			os.Exit(0)

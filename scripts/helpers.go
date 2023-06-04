@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -10,9 +11,11 @@ import (
 )
 
 func cloneMod(repo string) error {
+	fmt.Print("starting to clone")
 	modName := extractModName(repo)
 	modLocation := consts.SteampipeBasePath + modName
 	if _, err := os.Stat(modLocation); err == nil {
+		fmt.Print("found existing mod, deleting")
 		// remove repo if it exists so we can clone it
 		if err = os.RemoveAll(modLocation); err != nil {
 			return errors.Wrap(err, "remove existing mod")
@@ -22,11 +25,13 @@ func cloneMod(repo string) error {
 	if err := cmd.Run(); err != nil {
 		return errors.Wrap(err, "git clone mod")
 	}
+	fmt.Print("cloned repo")
 	cmd = exec.Command("steampipe", "mod", "install")
 	cmd.Dir = modLocation
 	if err := cmd.Run(); err != nil {
 		return errors.Wrap(err, "steampipe mod dependencies install")
 	}
+	fmt.Print("installed mod")
 	return nil
 }
 
