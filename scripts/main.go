@@ -19,6 +19,8 @@ func main() {
 		os.Exit(0)
 	}
 
+	log.Error("avocado")
+
 	for _, credentialGenerator := range generators.Generators {
 		if err := credentialGenerator.Generate(); err != nil {
 			log.Errorf("Failed to generate credentials: %v", err)

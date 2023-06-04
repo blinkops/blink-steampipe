@@ -2,9 +2,10 @@ package logger
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"os"
 )
 
 const (
