@@ -28,7 +28,7 @@ func cloneMod(repo string) error {
 	}
 	cmd := exec.Command("git", "clone", repo, modLocation)
 	if err := cmd.Run(); err != nil {
-		return errors.Wrap(err, "git clone mod")
+		return errors.Wrapf(err, "git clone mod %s", modLocation)
 	}
 	log.Info("cloned repo")
 	cmd = exec.Command("steampipe", "mod", "install")
