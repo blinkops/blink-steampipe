@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/blinkops/blink-steampipe/scripts/consts"
@@ -18,7 +19,7 @@ func cloneAndInstallModFromPublicRepo(repo string) error {
 	}
 	repoStr := string(decodedRepo)
 	modName := extractModName(repoStr)
-	modLocation := consts.SteampipeBasePath + modName
+	modLocation := filepath.Join(consts.SteampipeBasePath, "custom", modName)
 	if _, err = os.Stat(modLocation); !os.IsNotExist(err) {
 		log.Info("found existing mod, deleting")
 		// remove repo if it exists so we can clone it
