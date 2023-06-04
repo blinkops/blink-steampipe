@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"encoding/base64"
 	"os"
 	"os/exec"
 	"strings"
@@ -12,11 +12,15 @@ import (
 )
 
 func cloneMod(repo string) error {
-	log.Infof("starting to clone repo %s", repo)
-	modName := extractModName(repo)
+	log.Info("starting to handle remote repo")
+	decodedRepo, err := base64.StdEncoding.DecodeString(repo)
+	if err != nil {
+		return errors.Wrap(err, "decode repo string")
+	}
+	modName := extractModName(string(decodedRepo))
 	modLocation := consts.SteampipeBasePath + modName
 	if _, err := os.Stat(modLocation); err == nil {
-		fmt.Print("found existing mod, deleting")
+		log.Info("found existing mod, deleting")
 		// remove repo if it exists so we can clone it
 		if err = os.RemoveAll(modLocation); err != nil {
 			return errors.Wrap(err, "remove existing mod")
