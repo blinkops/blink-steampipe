@@ -12,7 +12,7 @@ import (
 )
 
 func cloneMod(repo string) error {
-	log.Info("starting to clone")
+	log.Infof("starting to clone repo %s", repo)
 	modName := extractModName(repo)
 	modLocation := consts.SteampipeBasePath + modName
 	if _, err := os.Stat(modLocation); err == nil {
