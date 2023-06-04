@@ -6,10 +6,11 @@ const (
 )
 
 const (
-	ReportFileParentDirEnvVar       = "REPORT_FILE_PARENT_DIR"
-	ReportFilePathEnvVar            = "REPORT_FILE_NAME"
-	FileOutputOverrideFormat        = "output written to file with identifier '%s'"
-	FileOutputOverrideOnErrorFormat = FileOutputOverrideFormat + " on error"
+	ReportFileParentDirEnvVar              = "REPORT_FILE_PARENT_DIR"
+	ReportFilePathEnvVar                   = "REPORT_FILE_NAME"
+	SteampipeReportCustomModLocationEnvVar = "CUSTOM_MOD_LOCATION"
+	FileOutputOverrideFormat               = "output written to file with identifier '%s'"
+	FileOutputOverrideOnErrorFormat        = FileOutputOverrideFormat + " on error"
 )
 
 const (
