@@ -5,10 +5,10 @@ import (
 	"strings"
 )
 
-const steampipePluginVersionParam = "PLUGIN_VERSION_PARAM"
+const steampipePluginVersionEnvVar = "PLUGIN_VERSION"
 
 func setPluginVersion(dataAsString, defaultVersion string) string {
-	pluginVersion := os.Getenv(steampipePluginVersionParam)
+	pluginVersion := os.Getenv(steampipePluginVersionEnvVar)
 	if pluginVersion == "" {
 		pluginVersion = defaultVersion
 	}
