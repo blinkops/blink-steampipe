@@ -11,7 +11,7 @@ jobs:
     uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@master
     with:
       run_number: ${{ github.run_number }}
-      plugin_image_name: blink-steampipe
+      plugin_image_name: ${{ github.repository }}
       branch_name: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
       run_tests: false
       run_make_cmd: false
@@ -21,7 +21,7 @@ jobs:
     uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@master
     with:
       run_number: ${{ github.run_number }}
-      plugin_image_name: blink-steampipe-aws
+      plugin_image_name: ${{ github.repository }}-aws
       branch_name: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
       run_tests: false
       run_make_cmd: false
@@ -31,7 +31,7 @@ jobs:
     uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@master
     with:
       run_number: ${{ github.run_number }}
-      plugin_image_name: blink-steampipe-azure
+      plugin_image_name: ${{ github.repository }}-azure
       branch_name: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
       run_tests: false
       run_make_cmd: false
@@ -41,7 +41,7 @@ jobs:
     uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@master
     with:
       run_number: ${{ github.run_number }}
-      plugin_image_name: blink-steampipe-crowdstrike
+      plugin_image_name: ${{ github.repository }}-crowdstrike
       branch_name: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
       run_tests: false
       run_make_cmd: false
@@ -51,7 +51,7 @@ jobs:
     uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@master
     with:
       run_number: ${{ github.run_number }}
-      plugin_image_name: blink-steampipe-csv
+      plugin_image_name: ${{ github.repository }}-csv
       branch_name: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
       run_tests: false
       run_make_cmd: false
@@ -61,7 +61,7 @@ jobs:
     uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@master
     with:
       run_number: ${{ github.run_number }}
-      plugin_image_name: blink-steampipe-gcp
+      plugin_image_name: ${{ github.repository }}-gcp
       branch_name: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
       run_tests: false
       run_make_cmd: false
@@ -71,7 +71,7 @@ jobs:
     uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@master
     with:
       run_number: ${{ github.run_number }}
-      plugin_image_name: blink-steampipe-github
+      plugin_image_name: ${{ github.repository }}-github
       branch_name: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
       run_tests: false
       run_make_cmd: false
@@ -81,7 +81,7 @@ jobs:
     uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@master
     with:
       run_number: ${{ github.run_number }}
-      plugin_image_name: blink-steampipe-k8s
+      plugin_image_name: ${{ github.repository }}-k8s
       branch_name: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
       run_tests: false
       run_make_cmd: false
@@ -91,7 +91,7 @@ jobs:
     uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@master
     with:
       run_number: ${{ github.run_number }}
-      plugin_image_name: blink-steampipe-oci
+      plugin_image_name: ${{ github.repository }}-oci
       branch_name: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
       run_tests: false
       run_make_cmd: false
@@ -101,7 +101,7 @@ jobs:
     uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@master
     with:
       run_number: ${{ github.run_number }}
-      plugin_image_name: blink-steampipe-terraform
+      plugin_image_name: ${{ github.repository }}-terraform
       branch_name: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
       run_tests: false
       run_make_cmd: false
