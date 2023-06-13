@@ -2,12 +2,13 @@ package generators
 
 import (
 	"fmt"
-	"github.com/blinkops/blink-steampipe/scripts/consts"
 	"io/ioutil"
 	"math/rand"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/blinkops/blink-steampipe/scripts/consts"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -18,18 +19,18 @@ import (
 )
 
 const (
-	awsConnectionIdentifier     = "AWS_CONNECTION"
-	awsAccessKeyId              = "ACCESS_KEY_ID"
-	awsSecretAccessKey          = "SECRET_ACCESS_KEY"
-	awsSessionToken             = "aws_session_token"
-	awsRoleArn                  = "ROLE_ARN"
-	awsExternalID               = "EXTERNAL_ID"
-	awsWebIdentityTokenFile     = "AWS_WEB_IDENTITY_TOKEN_FILE"
-	awsDefaultSessionRegion     = "us-east-1"
-	awsRegionEnvVariable        = "AWS_REGION"
-	awsDefaultRegionEnvVariable = "AWS_DEFAULT_REGION"
-	awsRegionsListParam         = "AWS_REGIONS_PARAM"
-
+	awsDefaultPluginVersion       = "0.92.1"
+	awsConnectionIdentifier       = "AWS_CONNECTION"
+	awsAccessKeyId                = "ACCESS_KEY_ID"
+	awsSecretAccessKey            = "SECRET_ACCESS_KEY"
+	awsSessionToken               = "aws_session_token"
+	awsRoleArn                    = "ROLE_ARN"
+	awsExternalID                 = "EXTERNAL_ID"
+	awsWebIdentityTokenFile       = "AWS_WEB_IDENTITY_TOKEN_FILE"
+	awsDefaultSessionRegion       = "us-east-1"
+	awsRegionEnvVariable          = "AWS_REGION"
+	awsDefaultRegionEnvVariable   = "AWS_DEFAULT_REGION"
+	awsRegionsListParam           = "AWS_REGIONS_PARAM"
 	steampipeAwsConfigurationFile = consts.SteampipeSpcConfigurationPath + "aws.spc"
 )
 
@@ -315,6 +316,8 @@ func replaceSpcConfigs(access, secret, sessionToken string) error {
 	dataAsString = strings.ReplaceAll(dataAsString, "{{SESSION_TOKEN}}", sessionReplace)
 
 	dataAsString = setRegionParam(dataAsString)
+
+	dataAsString = setPluginVersion(dataAsString, awsDefaultPluginVersion)
 
 	if err = os.WriteFile(steampipeAwsConfigurationFile, []byte(dataAsString), 0o600); err != nil {
 		return fmt.Errorf("unable to prepare aws config file: %w", err)
