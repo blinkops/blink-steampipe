@@ -29,7 +29,7 @@ RUN git clone https://github.com/turbot/steampipe-mod-aws-well-architected --bra
 RUN mkdir -p /mods/steampipe-mod-aws-well-architected/.steampipe/mods/github.com/turbot/steampipe-mod-aws-compliance@v0.66.0
 RUN cp -R /mods/steampipe-mod-aws-compliance/. /mods/steampipe-mod-aws-well-architected/.steampipe/mods/github.com/turbot/steampipe-mod-aws-compliance@v0.66.0
 RUN ls -a /mods/steampipe-mod-aws-well-architected/.steampipe/mods/github.com/turbot/steampipe-mod-aws-compliance@v0.66.0
-COPY config/aws-well-architected-mod-cache.json /mods/steampipe-mod-aws-well-architected/.mod.cache.json
+COPY build/blink-steampipe-aws/aws-well-architected-mod-cache.json /mods/steampipe-mod-aws-well-architected/.mod.cache.json
 
 FROM turbot/steampipe:0.20.5
 
