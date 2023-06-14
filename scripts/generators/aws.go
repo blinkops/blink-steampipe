@@ -2,7 +2,6 @@ package generators
 
 import (
 	"fmt"
-	"github.com/blinkops/blink-steampipe/scripts/consts"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -13,23 +12,24 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/blinkops/blink-steampipe/scripts/consts"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
 const (
-	awsConnectionIdentifier     = "AWS_CONNECTION"
-	awsAccessKeyId              = "ACCESS_KEY_ID"
-	awsSecretAccessKey          = "SECRET_ACCESS_KEY"
-	awsSessionToken             = "aws_session_token"
-	awsRoleArn                  = "ROLE_ARN"
-	awsExternalID               = "EXTERNAL_ID"
-	awsWebIdentityTokenFile     = "AWS_WEB_IDENTITY_TOKEN_FILE"
-	awsDefaultSessionRegion     = "us-east-1"
-	awsRegionEnvVariable        = "AWS_REGION"
-	awsDefaultRegionEnvVariable = "AWS_DEFAULT_REGION"
-	awsRegionsListParam         = "AWS_REGIONS_PARAM"
-
+	awsDefaultPluginVersion       = "0.92.1"
+	awsConnectionIdentifier       = "AWS_CONNECTION"
+	awsAccessKeyId                = "ACCESS_KEY_ID"
+	awsSecretAccessKey            = "SECRET_ACCESS_KEY"
+	awsSessionToken               = "aws_session_token"
+	awsRoleArn                    = "ROLE_ARN"
+	awsExternalID                 = "EXTERNAL_ID"
+	awsWebIdentityTokenFile       = "AWS_WEB_IDENTITY_TOKEN_FILE"
+	awsDefaultSessionRegion       = "us-east-1"
+	awsRegionEnvVariable          = "AWS_REGION"
+	awsDefaultRegionEnvVariable   = "AWS_DEFAULT_REGION"
+	awsRegionsListParam           = "AWS_REGIONS_PARAM"
 	steampipeAwsConfigurationFile = consts.SteampipeSpcConfigurationPath + "aws.spc"
 )
 
@@ -274,22 +274,21 @@ func (gen AWSCredentialGenerator) getTrustedIdentityCreds(credentials map[string
 }
 
 func setRegionParam(dataAsString string) string {
-    regionsEnvValue := os.Getenv(awsRegionsListParam)
-    if regionsEnvValue == "" {
-        regionsEnvValue = "*"
-    }
+	regionsEnvValue := os.Getenv(awsRegionsListParam)
+	if regionsEnvValue == "" {
+		regionsEnvValue = "*"
+	}
 
-    regionsSeparated := strings.Split(regionsEnvValue, ",")
-    regions := make([]string, len(regionsSeparated))
+	regionsSeparated := strings.Split(regionsEnvValue, ",")
+	regions := make([]string, len(regionsSeparated))
 
-    for i, region := range regionsSeparated {
-        regions[i] = fmt.Sprintf(`"%s"`, strings.TrimSpace(region))
-    }
+	for i, region := range regionsSeparated {
+		regions[i] = fmt.Sprintf(`"%s"`, strings.TrimSpace(region))
+	}
 
-    regionsString := strings.Join(regions, ",")
-    return strings.ReplaceAll(dataAsString, "{{REGIONS}}", fmt.Sprintf("regions = [%s]", regionsString))
+	regionsString := strings.Join(regions, ",")
+	return strings.ReplaceAll(dataAsString, "{{REGIONS}}", fmt.Sprintf("regions = [%s]", regionsString))
 }
-
 
 func replaceSpcConfigs(access, secret, sessionToken string) error {
 	data, err := os.ReadFile(steampipeAwsConfigurationFile)
@@ -315,6 +314,8 @@ func replaceSpcConfigs(access, secret, sessionToken string) error {
 	dataAsString = strings.ReplaceAll(dataAsString, "{{SESSION_TOKEN}}", sessionReplace)
 
 	dataAsString = setRegionParam(dataAsString)
+
+	dataAsString = setPluginVersion(dataAsString, awsDefaultPluginVersion)
 
 	if err = os.WriteFile(steampipeAwsConfigurationFile, []byte(dataAsString), 0o600); err != nil {
 		return fmt.Errorf("unable to prepare aws config file: %w", err)

@@ -6,6 +6,7 @@ const (
 )
 
 const (
+	SteampipePluginVersionEnvVar           = "PLUGIN_VERSION"
 	ReportFileParentDirEnvVar              = "REPORT_FILE_PARENT_DIR"
 	ReportFilePathEnvVar                   = "REPORT_FILE_NAME"
 	SteampipeReportCustomModLocationEnvVar = "CUSTOM_MOD_LOCATION"
