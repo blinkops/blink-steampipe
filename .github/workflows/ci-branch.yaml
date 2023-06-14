@@ -7,7 +7,7 @@ on:
 
 jobs:
   steampipe-legacy:
-    uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@master
+    uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@DanielK/TSK-15777-support-current-latest-AWS-steampipe-CLI-version
     with:
       run_number: ${{ github.run_number }}
       plugin_image_name: ${{ github.repository }}
@@ -17,7 +17,7 @@ jobs:
       dockerfile_path: ./build/blink-steampipe/Dockerfile
     secrets: inherit
   steampipe-aws:
-    uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@master
+    uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@DanielK/TSK-15777-support-current-latest-AWS-steampipe-CLI-version
     with:
       run_number: ${{ github.run_number }}
       plugin_image_name: ${{ github.repository }}-aws
@@ -27,7 +27,7 @@ jobs:
       dockerfile_path: ./build/blink-steampipe-aws/Dockerfile
     secrets: inherit
   steampipe-azure:
-    uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@master
+    uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@DanielK/TSK-15777-support-current-latest-AWS-steampipe-CLI-version
     with:
       run_number: ${{ github.run_number }}
       plugin_image_name: ${{ github.repository }}-azure
@@ -37,7 +37,7 @@ jobs:
       dockerfile_path: ./build/blink-steampipe-azure/Dockerfile
     secrets: inherit
   steampipe-crowdstrike:
-    uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@master
+    uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@DanielK/TSK-15777-support-current-latest-AWS-steampipe-CLI-version
     with:
       run_number: ${{ github.run_number }}
       plugin_image_name: ${{ github.repository }}-crowdstrike
@@ -47,7 +47,7 @@ jobs:
       dockerfile_path: ./build/blink-steampipe-crowdstrike/Dockerfile
     secrets: inherit
   steampipe-csv:
-    uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@master
+    uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@DanielK/TSK-15777-support-current-latest-AWS-steampipe-CLI-version
     with:
       run_number: ${{ github.run_number }}
       plugin_image_name: ${{ github.repository }}-csv
@@ -57,7 +57,7 @@ jobs:
       dockerfile_path: ./build/blink-steampipe-csv/Dockerfile
     secrets: inherit
   steampipe-gcp:
-    uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@master
+    uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@DanielK/TSK-15777-support-current-latest-AWS-steampipe-CLI-version
     with:
       run_number: ${{ github.run_number }}
       plugin_image_name: ${{ github.repository }}-gcp
@@ -67,7 +67,7 @@ jobs:
       dockerfile_path: ./build/blink-steampipe-gcp/Dockerfile
     secrets: inherit
   steampipe-github:
-    uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@master
+    uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@DanielK/TSK-15777-support-current-latest-AWS-steampipe-CLI-version
     with:
       run_number: ${{ github.run_number }}
       plugin_image_name: ${{ github.repository }}-github
@@ -77,7 +77,7 @@ jobs:
       dockerfile_path: ./build/blink-steampipe-github/Dockerfile
     secrets: inherit
   steampipe-k8s:
-    uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@master
+    uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@DanielK/TSK-15777-support-current-latest-AWS-steampipe-CLI-version
     with:
       run_number: ${{ github.run_number }}
       plugin_image_name: ${{ github.repository }}-k8s
@@ -87,7 +87,7 @@ jobs:
       dockerfile_path: ./build/blink-steampipe-k8s/Dockerfile
     secrets: inherit
   steampipe-oci:
-    uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@master
+    uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@DanielK/TSK-15777-support-current-latest-AWS-steampipe-CLI-version
     with:
       run_number: ${{ github.run_number }}
       plugin_image_name: ${{ github.repository }}-oci
@@ -97,7 +97,7 @@ jobs:
       dockerfile_path: ./build/blink-steampipe-oci/Dockerfile
     secrets: inherit
   steampipe-terraform:
-    uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@master
+    uses: blinkops/blink-sdk/.github/workflows/plugin-ci.yaml@DanielK/TSK-15777-support-current-latest-AWS-steampipe-CLI-version
     with:
       run_number: ${{ github.run_number }}
       plugin_image_name: ${{ github.repository }}-terraform
