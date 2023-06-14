@@ -1,0 +1,11 @@
+{
+  "aws_well_architected": {
+    "github.com/turbot/steampipe-mod-aws-compliance": {
+      "name": "github.com/turbot/steampipe-mod-aws-compliance",
+      "alias": "aws_compliance",
+      "version": "0.66.0",
+      "constraint": "\u003e=0.66.0",
+      "struct_version": 20220411
+    }
+  }
+}
