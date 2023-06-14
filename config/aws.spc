@@ -1,5 +1,5 @@
 connection "aws" {
-    plugin = "aws@{{VERSION}}"
+    plugin = "{{VERSION}}"
     {{REGIONS}}
     {{ACCESS_KEY}}
     {{SECRET_KEY}}
