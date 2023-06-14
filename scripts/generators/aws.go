@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	awsDefaultPluginVersion       = "0.92.1"
+	awsDefaultPluginVersion       = "aws@0.92.1"
 	awsConnectionIdentifier       = "AWS_CONNECTION"
 	awsAccessKeyId                = "ACCESS_KEY_ID"
 	awsSecretAccessKey            = "SECRET_ACCESS_KEY"
