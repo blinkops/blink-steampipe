@@ -8,12 +8,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/blinkops/blink-steampipe/scripts/consts"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/blinkops/blink-steampipe/scripts/consts"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
