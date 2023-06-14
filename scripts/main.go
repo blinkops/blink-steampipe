@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/blinkops/blink-steampipe/internal/logger"
 	"github.com/blinkops/blink-steampipe/internal/response_wrapper"
@@ -40,11 +41,23 @@ func main() {
 	}
 	cmdArgs := os.Args[2:]
 
+	// if the user chooses to run with the latest version of the plugin, install it dynamically
+	if version := os.Getenv(consts.SteampipePluginVersionEnvVar); strings.Contains(version, "latest") {
+		cmd := exec.Command("steampipe", "install", "plugin", version)
+		if output, err := cmd.CombinedOutput(); err != nil {
+			log.Error(errors.Wrapf(errors.New(string(output)), "install %s plugin"), version)
+			response_wrapper.HandleResponse(string(output), logger.GetLogs(), action, true)
+
+			os.Exit(0)
+		}
+	}
+
 	// we clone the repo to the corresponding location mentioned in queryV2PreInvoke in controller
 	if repo := os.Getenv(consts.SteampipeReportCustomModLocationEnvVar); repo != "" {
-		if err := cloneAndInstallModFromPublicRepo(repo); err != nil {
-			log.Error(errors.Wrap(err, "load mod"))
-			response_wrapper.HandleResponse(err.Error(), logger.GetLogs(), action, true)
+		if output, err := cloneAndInstallModFromPublicRepo(repo); err != nil {
+			log.Error(errors.Wrapf(errors.New(string(output)), "load mod %s"), repo)
+			response_wrapper.HandleResponse(string(output), logger.GetLogs(), action, true)
+
 			os.Exit(0)
 		}
 	}
