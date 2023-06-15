@@ -35,7 +35,7 @@ FROM turbot/steampipe:0.20.5
 
 # Install the aws and steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0
-RUN steampipe plugin install aws@0.106.0 aws@0.92.1
+RUN steampipe plugin install aws@latest aws@0.106.0 aws@0.92.1
 
 COPY --from=builder /bin/generate /home/steampipe/bin/
 COPY --from=mods /mods /home/steampipe
