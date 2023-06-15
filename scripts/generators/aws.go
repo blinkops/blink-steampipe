@@ -315,7 +315,10 @@ func replaceSpcConfigs(access, secret, sessionToken string) error {
 
 	dataAsString = setRegionParam(dataAsString)
 
-	dataAsString = setPluginVersion(dataAsString, awsDefaultPluginVersion)
+	dataAsString, err = setPluginVersion(dataAsString, awsDefaultPluginVersion)
+	if err != nil {
+		return err
+	}
 
 	if err = os.WriteFile(steampipeAwsConfigurationFile, []byte(dataAsString), 0o600); err != nil {
 		return fmt.Errorf("unable to prepare aws config file: %w", err)
