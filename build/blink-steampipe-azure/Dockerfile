@@ -11,15 +11,16 @@ RUN make install
 FROM alpine/git:2.36.3 as mods
 
 WORKDIR /mods
-RUN git clone https://github.com/turbot/steampipe-mod-azure-compliance --branch v0.20
-RUN git clone https://github.com/turbot/steampipe-mod-azure-tags --branch v0.5
-RUN git clone https://github.com/turbot/steampipe-mod-azure-thrifty --branch v0.8
+RUN git clone https://github.com/turbot/steampipe-mod-azure-compliance --branch v0.29
+RUN git clone https://github.com/turbot/steampipe-mod-azure-tags --branch v0.6
+RUN git clone https://github.com/turbot/steampipe-mod-azure-thrifty --branch v0.9
+RUN git clone https://github.com/turbot/steampipe-mod-azure-insights --branch v0.10
 
 FROM turbot/steampipe:0.18.2
 
 # Install the azure and steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0
-RUN steampipe plugin install azure@0.35.1 azuread@0.8.3
+RUN steampipe plugin install azure@0.45.0 azuread@0.11.0
 
 COPY --from=builder /bin/generate /home/steampipe/bin/
 COPY --from=mods /mods /home/steampipe
