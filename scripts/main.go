@@ -69,7 +69,7 @@ func main() {
 		}
 	}
 
-	cmd := exec.Command(cmdName, cmdArgs...)
+	cmd = exec.Command(cmdName, cmdArgs...)
 	output, err := cmd.CombinedOutput()
 
 	// some steampipe benchmark ("check") may return an error code but return a result.
