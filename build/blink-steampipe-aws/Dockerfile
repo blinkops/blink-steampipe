@@ -31,7 +31,7 @@ RUN cp -R /mods/steampipe-mod-aws-compliance/. /mods/steampipe-mod-aws-well-arch
 RUN ls -a /mods/steampipe-mod-aws-well-architected/.steampipe/mods/github.com/turbot/steampipe-mod-aws-compliance@v0.66.0
 COPY build/blink-steampipe-aws/aws-well-architected-mod-cache.json /mods/steampipe-mod-aws-well-architected/.mod.cache.json
 
-FROM turbot/steampipe:0.20.5
+FROM turbot/steampipe:0.20.10
 
 # Install the aws and steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0
