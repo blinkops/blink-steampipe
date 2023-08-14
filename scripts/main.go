@@ -40,8 +40,14 @@ func main() {
 	}
 	cmdArgs := os.Args[2:]
 
-	cmd := exec.Command("steampipe", "service", "start")
-	if output, err := cmd.CombinedOutput(); err != nil {
+	if output, err := exec.Command("steampipe", "service", "stop", "--force").CombinedOutput(); err != nil {
+		log.Error("failed to stop service")
+		response_wrapper.HandleResponse(string(output), logger.GetLogs(), action, true)
+
+		os.Exit(0)
+	}
+
+	if output, err := exec.Command("steampipe", "service", "start").CombinedOutput(); err != nil {
 		log.Error("failed to start service")
 		response_wrapper.HandleResponse(string(output), logger.GetLogs(), action, true)
 
@@ -69,7 +75,7 @@ func main() {
 		}
 	}
 
-	cmd = exec.Command(cmdName, cmdArgs...)
+	cmd := exec.Command(cmdName, cmdArgs...)
 	output, err := cmd.CombinedOutput()
 
 	// some steampipe benchmark ("check") may return an error code but return a result.
