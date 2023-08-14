@@ -40,20 +40,6 @@ func main() {
 	}
 	cmdArgs := os.Args[2:]
 
-	if output, err := exec.Command("steampipe", "service", "stop", "--force").CombinedOutput(); err != nil {
-		log.Error("failed to stop service")
-		response_wrapper.HandleResponse(string(output), logger.GetLogs(), action, true)
-
-		os.Exit(0)
-	}
-
-	if output, err := exec.Command("steampipe", "service", "start").CombinedOutput(); err != nil {
-		log.Error("failed to start service")
-		response_wrapper.HandleResponse(string(output), logger.GetLogs(), action, true)
-
-		os.Exit(0)
-	}
-
 	// if the user chooses to run with the latest version of the plugin, install it dynamically
 	if version := os.Getenv(consts.SteampipePluginVersionEnvVar); strings.Contains(version, "latest") {
 		cmd := exec.Command("steampipe", "install", "plugin", version)
