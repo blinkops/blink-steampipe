@@ -15,14 +15,14 @@ import (
 
 func main() {
 	if err := logger.SetUpLogger(); err != nil {
-		response_wrapper.HandleResponse("", fmt.Sprintf("set up logger: %v", err.Error()), "", true)
+		response_wrapper.HandleResponse("", fmt.Sprintf("set up logger: %v", err.Error()), true)
 		os.Exit(0)
 	}
 
 	for _, credentialGenerator := range generators.Generators {
 		if err := credentialGenerator.Generate(); err != nil {
 			log.Errorf("Failed to generate credentials: %v", err)
-			response_wrapper.HandleResponse("", logger.GetLogs(), "", true)
+			response_wrapper.HandleResponse("", logger.GetLogs(), true)
 			os.Exit(0)
 		}
 	}
@@ -35,7 +35,7 @@ func main() {
 
 	if cmdName == "" {
 		log.Error("No command provided")
-		response_wrapper.HandleResponse("", logger.GetLogs(), action, true)
+		response_wrapper.HandleResponse("", logger.GetLogs(), true)
 		os.Exit(0)
 	}
 	cmdArgs := os.Args[2:]
@@ -45,7 +45,7 @@ func main() {
 		cmd := exec.Command("steampipe", "install", "plugin", version)
 		if output, err := cmd.CombinedOutput(); err != nil {
 			log.Errorf("install %s plugin: got %v", version, err)
-			response_wrapper.HandleResponse(string(output), logger.GetLogs(), action, true)
+			response_wrapper.HandleResponse(string(output), logger.GetLogs(), true)
 
 			os.Exit(0)
 		}
@@ -55,7 +55,7 @@ func main() {
 	if repo := os.Getenv(consts.SteampipeReportCustomModLocationEnvVar); repo != "" {
 		if output, err := cloneAndInstallModFromPublicRepo(repo); err != nil {
 			log.Errorf("load mod %s: got %v", repo, err)
-			response_wrapper.HandleResponse(string(output), logger.GetLogs(), action, true)
+			response_wrapper.HandleResponse(string(output), logger.GetLogs(), true)
 
 			os.Exit(0)
 		}
@@ -68,10 +68,10 @@ func main() {
 	// in such a case, we don't want the entire report to fail and display the result.
 	if err != nil && (action != consts.CommandCheck || len(output) == 0) {
 		log.Errorf("Failed to execute command: %v", err)
-		response_wrapper.HandleResponse(string(output), logger.GetLogs(), action, true)
+		response_wrapper.HandleResponse(string(output), logger.GetLogs(), true)
 		os.Exit(0)
 	}
 
-	response_wrapper.HandleResponse(string(output), logger.GetLogs(), action, false)
+	response_wrapper.HandleResponse(string(output), logger.GetLogs(), false)
 	os.Exit(0)
 }

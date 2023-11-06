@@ -3,7 +3,6 @@ package response_wrapper
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -40,7 +39,7 @@ func DebugModeEnabled() bool {
 	return false
 }
 
-func HandleResponse(output, log, action string, exitWithError bool) {
+func HandleResponse(output, log string, exitWithError bool) {
 	resp := &ResponseWrapper{
 		Log: log,
 	}
@@ -61,7 +60,7 @@ func HandleResponse(output, log, action string, exitWithError bool) {
 
 	resp.Output = result
 	resp.IsError = isError || exitWithError
-	handleReportFileResponseIfRequired(resp, action)
+	handleFileIdentifierResponseIfRequired(resp)
 
 	marshaledResponse, err := json.Marshal(resp)
 	if err != nil {
@@ -73,25 +72,21 @@ func HandleResponse(output, log, action string, exitWithError bool) {
 	fmt.Println(string(marshaledResponse))
 }
 
-func handleReportFileResponseIfRequired(resp *ResponseWrapper, action string) {
-	if action != consts.CommandCheck {
+func handleFileIdentifierResponseIfRequired(resp *ResponseWrapper) {
+	fileIdentifierParentDir := os.Getenv(consts.FileIdentifierParentDirEnvVar)
+	if fileIdentifierParentDir == "" {
 		return
 	}
 
-	reportFileParentDir := os.Getenv(consts.ReportFileParentDirEnvVar)
-	if reportFileParentDir == "" {
+	fileIdentifier := os.Getenv(consts.FileIdentifierEnvVar)
+	if fileIdentifier == "" {
 		return
 	}
 
-	reportFile := os.Getenv(consts.ReportFilePathEnvVar)
-	if reportFile == "" {
-		return
-	}
-
-	reportFilePath := filepath.Join(reportFileParentDir, reportFile)
-	if err := ioutil.WriteFile(reportFilePath, []byte(resp.Output), 0644); err != nil {
+	fileIdentifierPath := filepath.Join(fileIdentifierParentDir, fileIdentifier)
+	if err := os.WriteFile(fileIdentifierPath, []byte(resp.Output), 0o644); err != nil {
 		resp.IsError = true
-		resp.Output = fmt.Sprintf("failed to write report file: %v\n", err.Error())
+		resp.Output = fmt.Sprintf("failed to write file: %v\n", err.Error())
 		return
 	}
 
@@ -99,7 +94,7 @@ func handleReportFileResponseIfRequired(resp *ResponseWrapper, action string) {
 	if resp.IsError {
 		overrideFormat = consts.FileOutputOverrideOnErrorFormat
 	}
-	resp.Output = fmt.Sprintf(overrideFormat, reportFile)
+	resp.Output = fmt.Sprintf(overrideFormat, fileIdentifier)
 }
 
 // formatErrorMessage format the error message to be cleaner

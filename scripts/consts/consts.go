@@ -7,8 +7,8 @@ const (
 
 const (
 	SteampipePluginVersionEnvVar           = "PLUGIN_VERSION"
-	ReportFileParentDirEnvVar              = "REPORT_FILE_PARENT_DIR"
-	ReportFilePathEnvVar                   = "REPORT_FILE_NAME"
+	FileIdentifierParentDirEnvVar          = "FILE_IDENTIFIER_PARENT_DIR"
+	FileIdentifierEnvVar                   = "FILE_IDENTIFIER"
 	SteampipeReportCustomModLocationEnvVar = "CUSTOM_MOD_LOCATION"
 	FileOutputOverrideFormat               = "output written to file with identifier '%s'"
 	FileOutputOverrideOnErrorFormat        = FileOutputOverrideFormat + " on error"
