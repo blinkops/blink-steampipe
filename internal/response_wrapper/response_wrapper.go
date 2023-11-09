@@ -84,6 +84,7 @@ func handleFileIdentifierResponseIfRequired(resp *ResponseWrapper) {
 	}
 
 	fileIdentifierPath := filepath.Join(fileIdentifierParentDir, fileIdentifier)
+	resp.Log = fmt.Sprintf("%s\nwrite to output to file '%s', outout:\n%s", resp.Log, fileIdentifierPath, resp.Output)
 	if err := os.WriteFile(fileIdentifierPath, []byte(resp.Output), 0o644); err != nil {
 		resp.IsError = true
 		resp.Output = fmt.Sprintf("failed to write file: %v\n", err.Error())
