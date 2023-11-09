@@ -60,7 +60,7 @@ func (gen StorageCredentialsGenerator) Generate() error {
 		awsAccessKeyID,
 		awsSecretKey,
 		token); err != nil {
-		return errors.New("download content for steampipe")
+		return errors.Wrap(err, "download content for steampipe")
 	}
 
 	sourcePath := filepath.Join(tempDestination, fileID)

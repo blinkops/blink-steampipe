@@ -18,13 +18,15 @@ func DownloadFileFromS3Bucket(objectKey string, destination string, region strin
 
 	file, err := os.Create(path)
 	if err != nil {
-		return errors.Wrap(err, "download file from s3 bucket")
+		return errors.Wrapf(err, "create file path '%s'", path)
 	}
 	defer file.Close()
 
 	awsSession, _ := session.NewSession(
-		&aws.Config{Credentials: credentials.NewStaticCredentials(accessKeyID, secretKey, token),
-			Region: aws.String(region)},
+		&aws.Config{
+			Credentials: credentials.NewStaticCredentials(accessKeyID, secretKey, token),
+			Region:      aws.String(region),
+		},
 	)
 	downloader := s3manager.NewDownloader(awsSession)
 	_, err = downloader.Download(file,
