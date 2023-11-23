@@ -5,6 +5,8 @@ ARG TARGETARCH
 
 WORKDIR /go/src/github.com/blinkops/blink-steampipe
 
+RUN apk add --no-cache make
+
 COPY go.mod go.sum Makefile ./
 COPY scripts ./scripts
 COPY internal ./internal
