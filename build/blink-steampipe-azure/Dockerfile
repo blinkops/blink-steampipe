@@ -1,4 +1,7 @@
-FROM golang:1.18 as builder
+FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.21.4-alpine as builder
+
+ARG TARGETOS
+ARG TARGETARCH
 
 WORKDIR /go/src/github.com/blinkops/blink-steampipe
 
@@ -8,7 +11,7 @@ COPY internal ./internal
 
 RUN make install
 
-FROM alpine/git:2.36.3 as mods
+FROM --platform=${BUILDPLATFORM:-linux/amd64} alpine/git:2.36.3 as mods
 
 WORKDIR /mods
 RUN git clone https://github.com/turbot/steampipe-mod-azure-compliance --branch v0.29
@@ -16,7 +19,7 @@ RUN git clone https://github.com/turbot/steampipe-mod-azure-tags --branch v0.6
 RUN git clone https://github.com/turbot/steampipe-mod-azure-thrifty --branch v0.9
 RUN git clone https://github.com/turbot/steampipe-mod-azure-insights --branch v0.10
 
-FROM turbot/steampipe:0.18.2
+FROM --platform=${TARGETPLATFORM:-linux/amd64} turbot/steampipe:0.18.2
 
 # Install the azure and steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0
