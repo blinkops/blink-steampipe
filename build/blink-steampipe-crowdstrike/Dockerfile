@@ -1,4 +1,4 @@
-FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.21.4-alpine as builder
+FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.21.4-alpine3.18 as builder
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -13,7 +13,7 @@ COPY internal ./internal
 
 RUN make install
 
-FROM --platform=${TARGETPLATFORM:-linux/amd64} turbot/steampipe:0.16.1
+FROM --platform=${TARGETPLATFORM:-linux/amd64} turbot/steampipe:0.18.2
 
 # Install steampipe and all steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0
