@@ -1,6 +1,11 @@
-FROM golang:1.18 as builder
+FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.21.4-alpine3.18 as builder
+
+ARG TARGETOS
+ARG TARGETARCH
 
 WORKDIR /go/src/github.com/blinkops/blink-steampipe
+
+RUN apk add --no-cache make
 
 COPY go.mod go.sum Makefile ./
 COPY scripts ./scripts
@@ -8,7 +13,7 @@ COPY internal ./internal
 
 RUN make install
 
-FROM turbot/steampipe:0.16.1
+FROM --platform=${TARGETPLATFORM:-linux/amd64} turbot/steampipe:0.18.2
 
 # Install steampipe and all steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0

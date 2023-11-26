@@ -1,6 +1,11 @@
-FROM golang:1.18 as builder
+FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.21.4-alpine3.18 as builder
+
+ARG TARGETOS
+ARG TARGETARCH
 
 WORKDIR /go/src/github.com/blinkops/blink-steampipe
+
+RUN apk add --no-cache make
 
 COPY go.mod go.sum Makefile ./
 COPY scripts ./scripts
@@ -8,7 +13,7 @@ COPY internal ./internal
 
 RUN make install
 
-FROM alpine/git:2.36.3 as mods
+FROM --platform=${BUILDPLATFORM:-linux/amd64} alpine/git:2.36.3 as mods
 
 WORKDIR /mods
 RUN git clone https://github.com/turbot/steampipe-mod-aws-compliance --branch v0.66
@@ -31,7 +36,7 @@ RUN cp -R /mods/steampipe-mod-aws-compliance/. /mods/steampipe-mod-aws-well-arch
 RUN ls -a /mods/steampipe-mod-aws-well-architected/.steampipe/mods/github.com/turbot/steampipe-mod-aws-compliance@v0.66.0
 COPY build/blink-steampipe-aws/aws-well-architected-mod-cache.json /mods/steampipe-mod-aws-well-architected/.mod.cache.json
 
-FROM turbot/steampipe:0.20.5
+FROM --platform=${TARGETPLATFORM:-linux/amd64} turbot/steampipe:0.20.5
 
 # Install the aws and steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0

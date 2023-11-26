@@ -1,6 +1,11 @@
-FROM golang:1.18 as builder
+FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.21.4-alpine3.18 as builder
+
+ARG TARGETOS
+ARG TARGETARCH
 
 WORKDIR /go/src/github.com/blinkops/blink-steampipe
+
+RUN apk add --no-cache make
 
 COPY go.mod go.sum Makefile ./
 COPY scripts ./scripts
@@ -8,14 +13,14 @@ COPY internal ./internal
 
 RUN make install
 
-FROM alpine/git:2.36.3 as mods
+FROM --platform=${BUILDPLATFORM:-linux/amd64} alpine/git:2.36.3 as mods
 
 WORKDIR /mods
 RUN git clone https://github.com/turbot/steampipe-mod-gcp-compliance --branch v0.13
 RUN git clone https://github.com/turbot/steampipe-mod-gcp-labels --branch v0.6
 RUN git clone https://github.com/turbot/steampipe-mod-gcp-thrifty --branch v0.10
 
-FROM turbot/steampipe:0.18.2
+FROM --platform=${TARGETPLATFORM:-linux/amd64} turbot/steampipe:0.18.2
 
 # Install the gcp and steampipe plugins for Steampipe (as steampipe user).
 USER steampipe:0
