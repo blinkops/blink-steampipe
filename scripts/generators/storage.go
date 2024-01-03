@@ -16,6 +16,7 @@ const (
 	SteampipeStorageAWSBucket      = "STORAGE_AWS_BUCKET"
 	SteampipeStorageAWSRootDir     = "STORAGE_AWS_ROOT_DIR"
 	SteampipeStorageAWSToken       = "STORAGE_AWS_TOKEN"
+	SteampipeStorageAWSEndpoint    = "STORAGE_AWS_ENDPOINT"
 	SteampipeStorageAWSRegion      = "STORAGE_AWS_REGION"
 	storageDestination             = "/workspace"
 	tempDestination                = "/tmp"
@@ -48,18 +49,11 @@ func (gen StorageCredentialsGenerator) Generate() error {
 	if !ok {
 		return errors.New("missing STORAGE_AWS_ROOT_DIR env. key")
 	}
-	token, ok := os.LookupEnv(SteampipeStorageAWSToken)
-	if !ok {
-		return errors.New("missing STORAGE_AWS_ROOT_DIR env. key")
-	}
 
-	if err := blinkaws.DownloadFileFromS3Bucket(filepath.Join(rootDir, fileID),
-		tempDestination,
-		region,
-		bucket,
-		awsAccessKeyID,
-		awsSecretKey,
-		token); err != nil {
+	token, _ := os.LookupEnv(SteampipeStorageAWSToken)
+	endpoint, _ := os.LookupEnv(SteampipeStorageAWSEndpoint)
+
+	if err := blinkaws.DownloadFileFromS3Bucket(filepath.Join(rootDir, fileID), tempDestination, region, bucket, awsAccessKeyID, awsSecretKey, endpoint, token); err != nil {
 		return errors.Wrap(err, "download content for steampipe")
 	}
 
