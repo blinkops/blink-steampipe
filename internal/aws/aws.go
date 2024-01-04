@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func DownloadFileFromS3Bucket(objectKey string, destination string, region string, bucket string, accessKeyID string, secretKey string, token string) error {
+func DownloadFileFromS3Bucket(objectKey, destination, region, bucket, accessKeyID, secretKey, endpoint, token string) error {
 	filename := filepath.Base(objectKey)
 	path := filepath.Join(destination, filename)
 
@@ -20,20 +20,29 @@ func DownloadFileFromS3Bucket(objectKey string, destination string, region strin
 	if err != nil {
 		return errors.Wrapf(err, "create file path '%s'", path)
 	}
-	defer file.Close()
 
-	awsSession, _ := session.NewSession(
-		&aws.Config{
-			Credentials: credentials.NewStaticCredentials(accessKeyID, secretKey, token),
-			Region:      aws.String(region),
-		},
-	)
-	downloader := s3manager.NewDownloader(awsSession)
-	_, err = downloader.Download(file,
-		&s3.GetObjectInput{
-			Bucket: aws.String(bucket),
-			Key:    aws.String(objectKey),
-		})
+	defer func() {
+		_ = file.Close()
+	}()
 
-	return errors.Wrap(err, "download file from s3 bucket")
+	config := &aws.Config{
+		Credentials: credentials.NewStaticCredentials(accessKeyID, secretKey, token),
+		Region:      aws.String(region),
+	}
+
+	if endpoint != "" {
+		config.Endpoint = aws.String(endpoint)
+	}
+
+	sess, err := session.NewSession(config)
+	if err != nil {
+		return err
+	}
+
+	downloader := s3manager.NewDownloader(sess)
+	if _, err = downloader.Download(file, &s3.GetObjectInput{Bucket: aws.String(bucket), Key: aws.String(objectKey)}); err != nil {
+		return errors.Wrap(err, "download file from s3 bucket")
+	}
+
+	return nil
 }
