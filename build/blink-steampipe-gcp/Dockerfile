@@ -1,13 +1,21 @@
 FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.21.4-alpine3.18 as builder
 
+ENV GOPRIVATE=github.com/blinkops
+
 ARG TARGETOS
 ARG TARGETARCH
 
 WORKDIR /go/src/github.com/blinkops/blink-steampipe
 
-RUN apk add --no-cache make
+RUN apk add --no-cache make git openssh-client
+
+RUN mkdir -p ~/.ssh && \
+    ssh-keyscan github.com >> ~/.ssh/known_hosts
+RUN git config --global url."git@github.com:blinkops/blink-sdk.git".insteadOf "https://github.com/blinkops/blink-sdk"
 
 COPY go.mod go.sum Makefile ./
+RUN --mount=type=ssh go mod download
+
 COPY scripts ./scripts
 COPY internal ./internal
 
